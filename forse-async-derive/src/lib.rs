@@ -1,9 +1,9 @@
-#![crate_name = "forse_async"]
+#![crate_name = "forse_async_derive"]
 #![crate_type = "lib"]
-#![cfg_attr(docsrs, feature(doc_cfg))]
 
-//! # forse-async
+//! # forse-async-derive
 //!
+//! A procedural macro which exposes the async and sync api for a function
 
 #![doc(html_playground_url = "https://play.rust-lang.org")]
 #![doc(
@@ -12,5 +12,3 @@
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/veeso/forse-async/main/assets/images/logo-500.png"
 )]
-
-pub mod sync;
