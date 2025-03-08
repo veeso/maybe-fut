@@ -1,0 +1,32 @@
+[package]
+name = "forse-async"
+version = { workspace = true }
+authors = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
+license = { workspace = true }
+keywords = { workspace = true }
+categories = { workspace = true }
+repository = { workspace = true }
+documentation = "https://docs.rs/forse-async/"
+description = "A library to build totally interoperable async/sync Rust code"
+include = ["src/**/*", "../LICENSE", "../README.md", "../CHANGELOG.md"]
+readme = "../README.md"
+
+
+[lib]
+name = "forse_async"
+path = "src/lib.rs"
+
+[dependencies]
+tokio = { workspace = true }
+
+[dev-dependencies]
+pretty_assertions = "1"
+
+[features]
+default = []
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

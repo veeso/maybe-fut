@@ -1,0 +1,22 @@
+[workspace]
+members = ["forse-async"]
+resolver = "2"
+
+[workspace.package]
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.85"
+authors = ["Christian Visintin <christian.visintin@veeso.dev>"]
+repository = "https://github.com/veeso/forse-async"
+license = "MIT"
+keywords = [
+  "async",
+  "async-interop",
+  "sync-async-interop",
+  "async-rust",
+  "async-sync",
+]
+categories = ["asynchronous"]
+
+[workspace.dependencies]
+tokio = "1"
