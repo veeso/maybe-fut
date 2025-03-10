@@ -13,4 +13,9 @@
     html_logo_url = "https://raw.githubusercontent.com/veeso/forse-async/main/assets/images/logo-500.png"
 )]
 
+// private api
+mod macros;
+
+// public api
+pub mod fs;
 pub mod sync;

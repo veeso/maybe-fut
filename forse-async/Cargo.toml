@@ -19,13 +19,21 @@ name = "forse_async"
 path = "src/lib.rs"
 
 [dependencies]
-tokio = { workspace = true }
+tokio = { workspace = true, default-features = false, optional = true }
 
 [dev-dependencies]
-pretty_assertions = "1"
+pretty_assertions = { workspace = true }
+tempfile = { workspace = true }
+
+[build-dependencies]
+cfg_aliases = { workspace = true }
 
 [features]
 default = []
+full = ["tokio", "tokio-fs", "tokio-sync"]
+tokio = ["dep:tokio"]
+tokio-fs = ["tokio", "tokio/fs"]
+tokio-sync = ["tokio", "tokio/sync"]
 
 [package.metadata.docs.rs]
 all-features = true
