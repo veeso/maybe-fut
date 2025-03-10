@@ -1,5 +1,5 @@
 [workspace]
-members = ["forse-async", "forse-async-derive"]
+members = ["maybe-fut", "maybe-fut-derive"]
 resolver = "2"
 
 [workspace.package]
@@ -7,7 +7,7 @@ version = "0.0.0"
 edition = "2024"
 rust-version = "1.85"
 authors = ["Christian Visintin <christian.visintin@veeso.dev>"]
-repository = "https://github.com/veeso/forse-async"
+repository = "https://github.com/veeso/maybe-fut"
 license = "MIT"
 keywords = [
   "async",

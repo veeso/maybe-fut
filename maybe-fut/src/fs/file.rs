@@ -42,6 +42,6 @@ mod test {
         let temp = NamedTempFile::new().expect("Failed to create temp file");
         let f = std::fs::File::create(temp.path()).expect("Failed to create file");
 
-        let forse_async_file = File::from(f);
+        let maybe_fut_file = File::from(f);
     }
 }

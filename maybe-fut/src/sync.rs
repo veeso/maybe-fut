@@ -7,7 +7,7 @@ use std::time::Duration;
 /// A runtime to execute sync code without async context.
 ///
 /// This type should be used only when exporting the sync api of a library using
-/// forse-async to create an interoperable async/sync api.
+/// maybe-fut to create an interoperable async/sync api.
 pub struct SyncRuntime;
 
 impl SyncRuntime {

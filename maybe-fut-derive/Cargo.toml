@@ -1,5 +1,5 @@
 [package]
-name = "forse-async-derive"
+name = "maybe-fut-derive"
 version = { workspace = true }
 authors = { workspace = true }
 edition = { workspace = true }
@@ -8,14 +8,14 @@ license = { workspace = true }
 keywords = { workspace = true }
 categories = { workspace = true }
 repository = { workspace = true }
-documentation = "https://docs.rs/forse-async/"
-description = "forse_async derive crate for forse-async"
+documentation = "https://docs.rs/maybe-fut/"
+description = "maybe_fut derive crate for maybe-fut"
 include = ["src/**/*", "../LICENSE", "../README.md", "../CHANGELOG.md"]
 readme = "../README.md"
 
 
 [lib]
-name = "forse_async_derive"
+name = "maybe_fut_derive"
 path = "src/lib.rs"
 proc-macro = true
 

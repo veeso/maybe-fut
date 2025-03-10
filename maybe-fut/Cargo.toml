@@ -1,5 +1,5 @@
 [package]
-name = "forse-async"
+name = "maybe-fut"
 version = { workspace = true }
 authors = { workspace = true }
 edition = { workspace = true }
@@ -8,14 +8,14 @@ license = { workspace = true }
 keywords = { workspace = true }
 categories = { workspace = true }
 repository = { workspace = true }
-documentation = "https://docs.rs/forse-async/"
+documentation = "https://docs.rs/maybe-fut/"
 description = "A library to build totally interoperable async/sync Rust code"
 include = ["src/**/*", "../LICENSE", "../README.md", "../CHANGELOG.md"]
 readme = "../README.md"
 
 
 [lib]
-name = "forse_async"
+name = "maybe_fut"
 path = "src/lib.rs"
 
 [dependencies]

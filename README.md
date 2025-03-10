@@ -1,13 +1,13 @@
-# forse-async
+# maybe-fut
 
 <p align="center">
   <img src="/assets/images/logo.svg" alt="logo" width="256" height="256" />
 </p>
 <p align="center">Rust library to build totally interoperable async/sync Rust code</p>
 <p align="center">
-  <a href="https://docs.rs/forse-async" target="_blank">Documentation</a>
+  <a href="https://docs.rs/maybe-fut" target="_blank">Documentation</a>
   ·
-  <a href="https://crates.io/crates/forse-async" target="_blank">Crates.io</a>
+  <a href="https://crates.io/crates/maybe-fut" target="_blank">Crates.io</a>
 </p>
 
 <p align="center">Developed by <a href="https://veeso.me/">veeso</a>
@@ -16,22 +16,22 @@
 <p align="center">
   <a href="https://opensource.org/licenses/MIT"
     ><img
-      src="https://img.shields.io/crates/l/forse-async.svg"
+      src="https://img.shields.io/crates/l/maybe-fut.svg"
       alt="License-Apache-2.0/MIT"
   /></a>
-  <a href="https://github.com/veeso/forse-async/stargazers"
+  <a href="https://github.com/veeso/maybe-fut/stargazers"
     ><img
-      src="https://img.shields.io/github/stars/veeso/forse-async?style=flat"
+      src="https://img.shields.io/github/stars/veeso/maybe-fut?style=flat"
       alt="Repo stars"
   /></a>
-  <a href="https://crates.io/crates/forse-async"
+  <a href="https://crates.io/crates/maybe-fut"
     ><img
-      src="https://img.shields.io/crates/d/forse-async.svg"
+      src="https://img.shields.io/crates/d/maybe-fut.svg"
       alt="Downloads counter"
   /></a>
-  <a href="https://crates.io/crates/forse-async"
+  <a href="https://crates.io/crates/maybe-fut"
     ><img
-      src="https://img.shields.io/crates/v/forse-async.svg"
+      src="https://img.shields.io/crates/v/maybe-fut.svg"
       alt="Latest version"
   /></a>
   <a href="https://ko-fi.com/veeso">
@@ -46,26 +46,26 @@
   /></a>
 </p>
 <p align="center">
-  <a href="https://github.com/veeso/forse-async/actions"
+  <a href="https://github.com/veeso/maybe-fut/actions"
     ><img
-      src="https://github.com/veeso/forse-async/actions/workflows/cargo.yml/badge.svg"
+      src="https://github.com/veeso/maybe-fut/actions/workflows/cargo.yml/badge.svg"
       alt="Lib-CI"
   /></a>
-  <a href="https://coveralls.io/github/veeso/forse-async"
+  <a href="https://coveralls.io/github/veeso/maybe-fut"
     ><img
-      src="https://coveralls.io/repos/github/veeso/forse-async/badge.svg"
+      src="https://coveralls.io/repos/github/veeso/maybe-fut/badge.svg"
       alt="Coveralls"
   /></a>
-  <a href="https://docs.rs/forse-async"
+  <a href="https://docs.rs/maybe-fut"
     ><img
-      src="https://docs.rs/forse-async/badge.svg"
+      src="https://docs.rs/maybe-fut/badge.svg"
       alt="Docs"
   /></a>
 </p>
 
 ---
 
-- [forse-async](#forse-async)
+- [maybe-fut](#maybe-fut)
   - [Introduction 👋](#introduction-)
   - [Support the developer ☕](#support-the-developer-)
   - [Changelog ⌛](#changelog-)
