@@ -9,6 +9,7 @@ use crate::maybe_fut_method;
 pub struct DirEntry(DirEntryInner);
 
 #[derive(Debug)]
+#[allow(clippy::large_enum_variant)]
 enum DirEntryInner {
     /// Std variant of file <https://docs.rs/rustc-std-workspace-std/latest/std/fs/struct.DirEntry.html>
     Std(std::fs::DirEntry),
