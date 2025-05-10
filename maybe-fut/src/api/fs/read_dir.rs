@@ -9,6 +9,7 @@ pub struct ReadDir(ReadDirInner);
 
 /// Inner pointer to sync or async read dir.
 #[derive(Debug)]
+#[allow(clippy::large_enum_variant)]
 enum ReadDirInner {
     /// Std variant of file <https://docs.rs/rustc-std-workspace-std/latest/std/fs/struct.ReadDir.html>
     Std(std::fs::ReadDir),
