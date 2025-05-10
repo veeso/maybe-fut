@@ -44,9 +44,10 @@ macro_rules! maybe_fut_constructor_result {
             pub async fn $name( $( $arg_name : $arg_type ),* ) -> $ret {
                 #[cfg($feature)]
                 {
-                    match $crate::context::is_async_context() {
-                        true => $tokio_module( $( $arg_name ),* ).await.map(Self::from),
-                        false => $std_module( $( $arg_name ),* ).map(Self::from),
+                    if $crate::context::is_async_context() {
+                        $tokio_module( $( $arg_name ),* ).await.map(Self::from)
+                    } else {
+                        $std_module( $( $arg_name ),* ).map(Self::from)
                     }
                 }
                 #[cfg(not($feature))]

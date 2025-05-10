@@ -12,7 +12,7 @@ pub struct File(FileInner);
 /// Inner pointer to sync or async file.
 #[derive(Debug)]
 enum FileInner {
-    /// Std variant of file
+    /// Std variant of file <https://docs.rs/rustc-std-workspace-std/latest/std/fs/struct.File.html>
     Std(std::fs::File),
     #[cfg(tokio_fs)]
     #[cfg_attr(docsrs, doc(cfg(feature = "tokio-fs")))]
