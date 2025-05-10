@@ -1,7 +1,6 @@
 //! The main type for interacting with the file system is the [`File`] type.
 //! This type provides methods for reading and writing to files.
 
-use std::os::fd::{AsFd, AsRawFd, FromRawFd};
 use std::path::Path;
 
 use super::OpenOptions;
@@ -175,7 +174,8 @@ impl File {
     }
 }
 
-impl AsFd for File {
+#[cfg(unix)]
+impl std::os::fd::AsFd for File {
     /// Returns a reference to the underlying file descriptor.
     ///
     /// This function is useful for passing the file descriptor to other APIs that require it.
@@ -202,7 +202,8 @@ impl std::os::windows::io::AsHandle for File {
     }
 }
 
-impl AsRawFd for File {
+#[cfg(unix)]
+impl std::os::fd::AsRawFd for File {
     /// Returns the raw file descriptor.
     ///
     /// This function is useful for passing the file descriptor to other APIs that require it.
@@ -215,7 +216,8 @@ impl AsRawFd for File {
     }
 }
 
-impl FromRawFd for File {
+#[cfg(unix)]
+impl std::os::fd::FromRawFd for File {
     /// Creates a new [`File`] instance from a raw file descriptor.
     ///
     /// This function is useful for creating a [`File`] instance from a file descriptor that was obtained from another API.
