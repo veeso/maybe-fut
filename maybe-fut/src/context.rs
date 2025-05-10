@@ -2,6 +2,7 @@
 ///
 /// If tokio is disabled, this function will always return false.
 #[inline]
+#[allow(dead_code)]
 pub fn is_async_context() -> bool {
     #[cfg(tokio)]
     {

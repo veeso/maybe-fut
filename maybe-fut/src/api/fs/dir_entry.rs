@@ -39,6 +39,7 @@ impl DirEntry {
     pub fn file_name(&self) -> std::ffi::OsString {
         match &self.0 {
             DirEntryInner::Std(inner) => inner.file_name(),
+            #[cfg(tokio_fs)]
             DirEntryInner::Tokio(inner) => inner.file_name(),
         }
     }
@@ -66,6 +67,7 @@ impl DirEntry {
 
         match &self.0 {
             DirEntryInner::Std(inner) => inner.ino(),
+            #[cfg(tokio_fs)]
             DirEntryInner::Tokio(inner) => inner.ino(),
         }
     }
@@ -74,6 +76,7 @@ impl DirEntry {
     pub fn path(&self) -> std::path::PathBuf {
         match &self.0 {
             DirEntryInner::Std(inner) => inner.path(),
+            #[cfg(tokio_fs)]
             DirEntryInner::Tokio(inner) => inner.path(),
         }
     }
