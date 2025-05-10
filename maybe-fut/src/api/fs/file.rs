@@ -1,6 +1,7 @@
 //! The main type for interacting with the file system is the [`File`] type.
 //! This type provides methods for reading and writing to files.
 
+use std::os::fd::{AsFd, AsRawFd, FromRawFd};
 use std::path::Path;
 
 use super::OpenOptions;
@@ -170,6 +171,95 @@ impl File {
             FileInner::Std(file) => file.try_clone().map(Self::from),
             #[cfg(tokio_fs)]
             FileInner::Tokio(file) => file.try_clone().await.map(Self::from),
+        }
+    }
+}
+
+impl AsFd for File {
+    /// Returns a reference to the underlying file descriptor.
+    ///
+    /// This function is useful for passing the file descriptor to other APIs that require it.
+    fn as_fd(&self) -> std::os::fd::BorrowedFd<'_> {
+        match &self.0 {
+            FileInner::Std(file) => file.as_fd(),
+            #[cfg(tokio_fs)]
+            FileInner::Tokio(file) => file.as_fd(),
+        }
+    }
+}
+
+#[cfg(windows)]
+impl std::os::windows::io::AsHandle for File {
+    /// Returns a reference to the underlying file handle.
+    ///
+    /// This function is useful for passing the file handle to other APIs that require it.
+    fn as_handle(&self) -> std::os::windows::io::BorrowedHandle<'_> {
+        match &self.0 {
+            FileInner::Std(file) => file.as_handle(),
+            #[cfg(tokio_fs)]
+            FileInner::Tokio(file) => file.as_handle(),
+        }
+    }
+}
+
+impl AsRawFd for File {
+    /// Returns the raw file descriptor.
+    ///
+    /// This function is useful for passing the file descriptor to other APIs that require it.
+    fn as_raw_fd(&self) -> std::os::fd::RawFd {
+        match &self.0 {
+            FileInner::Std(file) => file.as_raw_fd(),
+            #[cfg(tokio_fs)]
+            FileInner::Tokio(file) => file.as_raw_fd(),
+        }
+    }
+}
+
+impl FromRawFd for File {
+    /// Creates a new [`File`] instance from a raw file descriptor.
+    ///
+    /// This function is useful for creating a [`File`] instance from a file descriptor that was obtained from another API.
+    unsafe fn from_raw_fd(fd: std::os::fd::RawFd) -> Self {
+        #[cfg(tokio_fs)]
+        {
+            if crate::context::is_async_context() {
+                Self(FileInner::Tokio(unsafe {
+                    tokio::fs::File::from_raw_fd(fd)
+                }))
+            } else {
+                Self(FileInner::Std(unsafe { std::fs::File::from_raw_fd(fd) }))
+            }
+        }
+        #[cfg(not(tokio_fs))]
+        {
+            Self(FileInner::Std(unsafe { std::fs::File::from_raw_fd(fd) }))
+        }
+    }
+}
+
+#[cfg(windows)]
+impl std::os::windows::io::FromRawHandle for File {
+    /// Creates a new [`File`] instance from a raw file handle.
+    ///
+    /// This function is useful for creating a [`File`] instance from a file handle that was obtained from another API.
+    unsafe fn from_raw_handle(handle: std::os::windows::io::RawHandle) -> Self {
+        #[cfg(tokio_fs)]
+        {
+            if crate::context::is_async_context() {
+                Self(FileInner::Tokio(unsafe {
+                    tokio::fs::File::from_raw_handle(handle)
+                }))
+            } else {
+                Self(FileInner::Std(unsafe {
+                    std::fs::File::from_raw_handle(handle)
+                }))
+            }
+        }
+        #[cfg(not(tokio_fs))]
+        {
+            Self(FileInner::Std(unsafe {
+                std::fs::File::from_raw_handle(handle)
+            }))
         }
     }
 }
