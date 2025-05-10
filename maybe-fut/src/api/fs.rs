@@ -4,3 +4,5 @@
 //! This includes reading/writingt to files, and working with directories.
 
 mod file;
+
+pub use file::File;

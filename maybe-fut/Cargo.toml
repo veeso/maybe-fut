@@ -19,11 +19,14 @@ name = "maybe_fut"
 path = "src/lib.rs"
 
 [dependencies]
-tokio = { workspace = true, default-features = false, optional = true }
+tokio = { workspace = true, default-features = false, features = [
+  "rt",
+], optional = true }
 
 [dev-dependencies]
 pretty_assertions = { workspace = true }
 tempfile = { workspace = true }
+tokio = { workspace = true, default-features = true, features = ["full"] }
 
 [build-dependencies]
 cfg_aliases = { workspace = true }

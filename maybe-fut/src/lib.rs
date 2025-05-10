@@ -14,8 +14,11 @@
 )]
 
 // private api
+mod api;
+mod context;
 mod macros;
+mod sync;
 
-// public api
-pub mod fs;
-pub mod sync;
+// public api (api is exported at top-level)
+pub use self::api::*;
+pub use self::sync::SyncRuntime;

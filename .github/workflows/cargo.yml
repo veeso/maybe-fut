@@ -17,8 +17,8 @@ jobs:
       - name: Build simple
         run: cargo build
       - name: Run tests
-        run: cargo test
+        run: cargo test-all
       - name: Format
         run: cargo fmt --all -- --check
       - name: Clippy
-        run: cargo clippy -- -Dwarnings
+        run: cargo lint
