@@ -3,6 +3,7 @@
 
 use std::path::Path;
 
+use super::OpenOptions;
 use crate::{maybe_fut_constructor_result, maybe_fut_method};
 
 #[derive(Debug)]
@@ -39,7 +40,7 @@ impl File {
         /// Attempts to open a file in read-only mode.
         /// See [`std::fs::OpenOptions`] for more details.
         ///
-        /// ## Errors
+        /// # Errors
         ///
         /// This function will return an error if called from outside of the Tokio runtime (if async) or if path does not already exist.
         /// Other errors may also be returned according to OpenOptions::open.
@@ -95,6 +96,82 @@ impl File {
         FileInner::Tokio,
         tokio_fs
     );
+
+    /// Returns a new [`OpenOptions`] object.
+    ///
+    /// This function returns a new OpenOptions object that you can use to open or create a file with specific options if open() or create() are not appropriate.
+    ///
+    /// It is equivalent to [`OpenOptions::new`], but allows you to write more readable code. Instead of `OpenOptions::new().append(true).open("example.log")`, you can write `File::options().append(true).open("example.log").await`.
+    /// This also avoids the need to import [`OpenOptions`].
+    ///
+    /// See the [`OpenOptions::new`] function for more details.
+    #[inline]
+    pub fn open_options() -> OpenOptions {
+        OpenOptions::new()
+    }
+
+    maybe_fut_method!(
+        /// Truncates or extends the underlying file, updating the size of this file to become size.
+        ///
+        /// If the size is less than the current file’s size, then the file will be shrunk.
+        /// If it is greater than the current file’s size, then the file will be extended to size and have all of the intermediate data filled in with 0s.
+        ///
+        /// # Errors
+        ///
+        /// This function will return an error if the file is not opened for writing.
+        set_len(size: u64) -> std::io::Result<()>,
+        FileInner::Std,
+        FileInner::Tokio,
+        tokio_fs
+    );
+
+    maybe_fut_method!(
+        /// Changes the permissions on the underlying file.
+        ///
+        /// Platform-specific behavior
+        /// This function currently corresponds to the fchmod function on Unix and the SetFileInformationByHandle function on Windows. Note that, this may change in the future.
+        ///
+        /// # Errors
+        ///
+        /// This function will return an error if the user lacks permission change attributes on the underlying file. It may also return an error in other os-specific unspecified cases.
+        set_permissions(perm: std::fs::Permissions) -> std::io::Result<()>,
+        FileInner::Std,
+        FileInner::Tokio,
+        tokio_fs
+    );
+
+    maybe_fut_method!(
+        /// Attempts to sync all OS-internal metadata to disk.
+        ///
+        /// This function will attempt to ensure that all in-core data reaches the filesystem before returning.
+        sync_all() -> std::io::Result<()>,
+        FileInner::Std,
+        FileInner::Tokio,
+        tokio_fs
+    );
+
+    maybe_fut_method!(
+        /// This function is similar to [`Self::sync_all`], except that it may not synchronize file metadata to the filesystem.
+        ///
+        /// This is intended for use cases that must synchronize content, but don’t need the metadata on disk.
+        /// The goal of this method is to reduce disk operations.
+        ///
+        /// Note that some platforms may simply implement this in terms of sync_all.
+        sync_data() -> std::io::Result<()>,
+        FileInner::Std,
+        FileInner::Tokio,
+        tokio_fs
+    );
+
+    /// Creates a new [`File`] instance that shares the same underlying file handle as the existing [`File`] instance.
+    /// Reads, writes, and seeks will affect both [`File`] instances simultaneously.
+    pub async fn try_clone(&self) -> std::io::Result<Self> {
+        match &self.0 {
+            FileInner::Std(file) => file.try_clone().map(Self::from),
+            #[cfg(tokio_fs)]
+            FileInner::Tokio(file) => file.try_clone().await.map(Self::from),
+        }
+    }
 }
 
 #[cfg(test)]

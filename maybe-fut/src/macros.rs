@@ -85,7 +85,8 @@ macro_rules! maybe_fut_method {
 /// A macro to create a mutable method that can be used in both async and sync contexts.
 #[macro_export]
 macro_rules! maybe_fut_method_mut {
-    ($(#[$meta:meta])*
+    (
+        $(#[$meta:meta])*
         $name:ident
         (
             $( $arg_name:ident : $arg_type:ty ),* $(,)?
@@ -104,4 +105,36 @@ macro_rules! maybe_fut_method_mut {
                 }
             }
         };
+}
+
+#[macro_export]
+/// A macro to create a function that can be used in both async and sync contexts.
+macro_rules! maybe_fut_function {
+    (
+        $(#[$meta:meta])*
+        $name:ident
+        (
+            $( $arg_name:ident : $arg_type:ty ),* $(,)?
+        )
+        -> $ret:ty,
+        $sync_function:path,
+        $async_function:path,
+        $feature:ident
+    ) => {
+        $(#[$meta])*
+        pub async fn $name( $( $arg_name : $arg_type ),* ) -> $ret {
+            #[cfg($feature)]
+            {
+                if $crate::context::is_async_context() {
+                    $async_function( $( $arg_name ),* ).await
+                } else {
+                    $sync_function( $( $arg_name ),* )
+                }
+            }
+            #[cfg(not($feature))]
+            {
+                $sync_function( $( $arg_name ),* )
+            }
+        }
+    };
 }
