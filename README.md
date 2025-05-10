@@ -39,6 +39,11 @@
       src="https://img.shields.io/badge/donate-ko--fi-red"
       alt="Ko-fi"
   /></a>
+  <a href="https://conventionalcommits.org">
+    <img
+      src="https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white"
+      alt="conventional-commits"
+  /></a>
 </p>
 <p align="center">
   <a href="https://github.com/veeso/maybe-fut/actions"
