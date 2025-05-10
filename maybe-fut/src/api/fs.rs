@@ -467,6 +467,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(unix)]
     fn test_should_set_permissions_sync() {
         let tempdir = tempfile::tempdir().unwrap();
         let file = tempdir.path().join("file.txt");
@@ -481,6 +482,7 @@ mod test {
     }
 
     #[tokio::test]
+    #[cfg(unix)]
     async fn test_should_set_permissions_async() {
         let tempdir = tempfile::tempdir().unwrap();
         let file = tempdir.path().join("file.txt");
