@@ -13,6 +13,9 @@
     html_logo_url = "https://raw.githubusercontent.com/veeso/maybe-fut/main/assets/images/logo-500.png"
 )]
 
+#[macro_use]
+extern crate maybe_fut_unwrap_derive;
+
 // private api
 mod api;
 mod context;

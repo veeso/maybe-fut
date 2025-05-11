@@ -6,7 +6,8 @@ use std::path::Path;
 use super::OpenOptions;
 use crate::{maybe_fut_constructor_result, maybe_fut_method};
 
-#[derive(Debug)]
+#[derive(Debug, Unwrap)]
+#[unwrap_types(std(std::fs::File), tokio(tokio::fs::File), tokio_gated("tokio-fs"))]
 /// A reference to an open file on the filesystem.
 pub struct File(FileInner);
 
