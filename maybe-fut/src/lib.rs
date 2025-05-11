@@ -18,7 +18,10 @@ mod api;
 mod context;
 mod macros;
 mod sync;
+mod unwrap;
 
 // public api (api is exported at top-level)
 pub use self::api::*;
+pub use self::context::is_async_context;
 pub use self::sync::SyncRuntime;
+pub use self::unwrap::Unwrap;

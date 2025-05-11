@@ -1,0 +1,25 @@
+[package]
+name = "maybe-fut-unwrap-derive"
+version = { workspace = true }
+authors = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
+license = { workspace = true }
+keywords = { workspace = true }
+categories = { workspace = true }
+repository = { workspace = true }
+documentation = "https://docs.rs/maybe-fut/"
+description = "maybe_fut derive crate for unwrap maybe-fut"
+include = ["src/**/*", "../LICENSE", "../README.md", "../CHANGELOG.md"]
+readme = "../README.md"
+
+
+[lib]
+name = "maybe_fut_unwrap_derive"
+path = "src/lib.rs"
+proc-macro = true
+
+[dependencies]
+proc-macro2 = { workspace = true }
+quote = { workspace = true }
+syn = { workspace = true }
