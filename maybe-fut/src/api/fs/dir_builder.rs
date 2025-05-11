@@ -1,7 +1,12 @@
 use crate::maybe_fut_method;
 
 /// A builder for creating directories in various manners.
-#[derive(Debug)]
+#[derive(Debug, Unwrap)]
+#[unwrap_types(
+    std(std::fs::DirBuilder),
+    tokio(tokio::fs::DirBuilder),
+    tokio_gated("tokio-fs")
+)]
 pub struct DirBuilder(DirBuilderInner);
 
 #[derive(Debug)]

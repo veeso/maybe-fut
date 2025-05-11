@@ -44,7 +44,7 @@ macro_rules! maybe_fut_constructor_result {
             pub async fn $name( $( $arg_name : $arg_type ),* ) -> $ret {
                 #[cfg($feature)]
                 {
-                    if $crate::context::is_async_context() {
+                    if $crate::is_async_context() {
                         $tokio_module( $( $arg_name ),* ).await.map(Self::from)
                     } else {
                         $std_module( $( $arg_name ),* ).map(Self::from)
@@ -125,7 +125,7 @@ macro_rules! maybe_fut_function {
         pub async fn $name( $( $arg_name : $arg_type ),* ) -> $ret {
             #[cfg($feature)]
             {
-                if $crate::context::is_async_context() {
+                if $crate::is_async_context() {
                     $async_function( $( $arg_name ),* ).await
                 } else {
                     $sync_function( $( $arg_name ),* )

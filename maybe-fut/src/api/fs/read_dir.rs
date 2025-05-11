@@ -1,6 +1,11 @@
 use super::DirEntry;
 
-#[derive(Debug)]
+#[derive(Debug, Unwrap)]
+#[unwrap_types(
+    std(std::fs::ReadDir),
+    tokio(tokio::fs::ReadDir),
+    tokio_gated("tokio-fs")
+)]
 /// Reads the entries in a directory.
 ///
 /// This struct is returned from the [`super::read_dir`] function of this module and will yield instances of [`DirEntry`].

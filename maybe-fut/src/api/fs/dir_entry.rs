@@ -5,7 +5,12 @@ use crate::maybe_fut_method;
 /// Entries returned by the [`super::ReadDir`] stream.
 ///
 /// An instance of DirEntry represents an entry inside of a directory on the filesystem. Each entry can be inspected via methods to learn about the full path or possibly other metadata through per-platform extension traits.
-#[derive(Debug)]
+#[derive(Debug, Unwrap)]
+#[unwrap_types(
+    std(std::fs::DirEntry),
+    tokio(tokio::fs::DirEntry),
+    tokio_gated("tokio-fs")
+)]
 pub struct DirEntry(DirEntryInner);
 
 #[derive(Debug)]

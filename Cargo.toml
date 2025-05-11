@@ -1,9 +1,9 @@
 [workspace]
-members = ["maybe-fut", "maybe-fut-derive"]
+members = ["maybe-fut", "maybe-fut-derive", "maybe-fut-unwrap-derive"]
 resolver = "3"
 
 [workspace.package]
-version = "0.0.0"
+version = "0.1.0"
 edition = "2024"
 rust-version = "1.85"
 authors = ["Christian Visintin <christian.visintin@veeso.dev>"]

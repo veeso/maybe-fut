@@ -1,4 +1,9 @@
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Unwrap)]
+#[unwrap_types(
+    std(std::fs::OpenOptions),
+    tokio(tokio::fs::OpenOptions),
+    tokio_gated("tokio-fs")
+)]
 /// Options and flags which can be used to configure how a file is opened.
 /// This builder exposes the ability to configure how a File is opened and what operations are permitted on the open file. The File::open and File::create methods are aliases for commonly used options using this builder.
 ///
@@ -372,7 +377,7 @@ impl OpenOptions {
 mod test {
 
     use super::*;
-    use crate::SyncRuntime;
+    use crate::{SyncRuntime, Unwrap};
 
     #[test]
     fn test_open_options() {
@@ -406,5 +411,17 @@ mod test {
             .open(temp.path())
             .await
             .expect("Failed to open file");
+    }
+
+    #[test]
+    fn test_should_get_underlying_type() {
+        let options = OpenOptions::new();
+        options.unwrap_std();
+    }
+
+    #[tokio::test]
+    async fn test_should_get_underlying_type_async() {
+        let options = OpenOptions::new();
+        options.unwrap_tokio();
     }
 }

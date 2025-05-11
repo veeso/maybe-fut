@@ -19,6 +19,7 @@ name = "maybe_fut"
 path = "src/lib.rs"
 
 [dependencies]
+maybe-fut-unwrap-derive = { path = "../maybe-fut-unwrap-derive", version = "0.1" }
 tokio = { workspace = true, default-features = false, features = [
   "rt",
 ], optional = true }
