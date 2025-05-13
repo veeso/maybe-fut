@@ -2,7 +2,6 @@
 
 use std::pin::Pin;
 use std::task::{Context, Poll, Waker};
-use std::time::Duration;
 
 /// A runtime to execute sync code without async context.
 ///
@@ -19,14 +18,11 @@ impl SyncRuntime {
 
         let mut ctx = Context::from_waker(Waker::noop());
 
-        loop {
-            match f.as_mut().poll(&mut ctx) {
-                Poll::Ready(val) => return val,
-                Poll::Pending => {
-                    std::thread::sleep(Duration::from_micros(10)); // it should not even happen
-                }
-            }
-        }
+        let Poll::Ready(val) = f.as_mut().poll(&mut ctx) else {
+            unreachable!("Future should not be pending in sync context");
+        };
+
+        val
     }
 }
 

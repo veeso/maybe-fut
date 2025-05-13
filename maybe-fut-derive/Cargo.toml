@@ -10,7 +10,13 @@ categories = { workspace = true }
 repository = { workspace = true }
 documentation = "https://docs.rs/maybe-fut/"
 description = "maybe_fut derive crate for maybe-fut"
-include = ["src/**/*", "../LICENSE", "../README.md", "../CHANGELOG.md"]
+include = [
+  "src/**/*",
+  "../LICENSE",
+  "../README.md",
+  "../CHANGELOG.md",
+  "../CODE_OF_CONDUCT.md",
+]
 readme = "../README.md"
 
 
