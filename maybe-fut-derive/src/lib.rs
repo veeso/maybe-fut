@@ -12,3 +12,20 @@
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/veeso/maybe-fut/main/assets/images/logo-500.png"
 )]
+
+mod args;
+mod struct_derive;
+
+use proc_macro::TokenStream;
+
+#[proc_macro_attribute]
+pub fn maybe_fut(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let args = match syn::parse(attr) {
+        Ok(args) => args,
+        Err(err) => {
+            return err.to_compile_error().into();
+        }
+    };
+
+    struct_derive::maybe_fut_struct(args, item)
+}

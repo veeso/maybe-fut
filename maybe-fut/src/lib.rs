@@ -24,6 +24,9 @@ mod sync;
 mod unwrap;
 
 // public api (api is exported at top-level)
+// export maybe fut derive macro
+pub use maybe_fut_derive::maybe_fut;
+
 pub use self::api::*;
 pub use self::context::is_async_context;
 pub use self::sync::SyncRuntime;

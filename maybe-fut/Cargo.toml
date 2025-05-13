@@ -10,7 +10,14 @@ categories = { workspace = true }
 repository = { workspace = true }
 documentation = "https://docs.rs/maybe-fut/"
 description = "A library to build totally interoperable async/sync Rust code"
-include = ["src/**/*", "../LICENSE", "../README.md", "../CHANGELOG.md"]
+include = [
+  "examples/**/*",
+  "src/**/*",
+  "../LICENSE",
+  "../README.md",
+  "../CHANGELOG.md",
+  "../CODE_OF_CONDUCT.md",
+]
 readme = "../README.md"
 
 
@@ -19,6 +26,7 @@ name = "maybe_fut"
 path = "src/lib.rs"
 
 [dependencies]
+maybe-fut-derive = { path = "../maybe-fut-derive", version = "0.1" }
 maybe-fut-unwrap-derive = { path = "../maybe-fut-unwrap-derive", version = "0.1" }
 tokio = { workspace = true, default-features = false, features = [
   "rt",
@@ -42,3 +50,8 @@ tokio-sync = ["tokio", "tokio/sync"]
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
+
+[[example]]
+name = "fs-client"
+path = "examples/example.rs"
+required-features = ["tokio-fs"]
