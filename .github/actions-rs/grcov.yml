@@ -6,5 +6,5 @@ ignore:
     - "/*"
     - "C:/*"
     - "../*"
-    - "./maybe-fut-derive/**/*"
-    - "./maybe-fut-unwrap-derive/**/*"
+    - "./maybe-fut-derive/*"
+    - "./maybe-fut-unwrap-derive/*"
