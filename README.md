@@ -87,6 +87,10 @@ This is a simple example of how it works:
 1. Setup your logic to be exported using `maybe-fut` types:
 
     ```rust
+    use std::path::{Path, PathBuf};
+
+    use maybe_fut::fs::File;
+
     struct FsClient {
         path: PathBuf,
     }
@@ -148,6 +152,71 @@ A full example can be found in the [examples](./maybe-fut/examples/) folder and 
 
 ```bash
 cargo run --example fs-client --features tokio-fs -- /tmp/test.txt
+```
+
+And the `maybe_fut` macro can be applied to traits as well, even combining generics:
+
+```rust
+use std::fmt::Display;
+
+#[derive(Debug, Clone, Copy)]
+struct TestStruct<T: Sized + Copy + Display> {
+    value: T,
+}
+
+#[maybe_fut::maybe_fut(
+    sync = SyncTestStruct,
+    tokio = TokioTestStruct,
+    tokio_feature = "tokio",
+)]
+impl<T> TestStruct<T>
+where
+    T: Sized + Copy + Display,
+{
+    /// Creates a new [`TestStruct`] instance.
+    pub fn new(value: T) -> Self {
+        Self { value }
+    }
+
+    /// Get underlying value.
+    pub fn value(&self) -> T {
+        self.value
+    }
+}
+
+/// A trait to greet the user.
+pub trait Greet {
+    /// Greets the user with a message.
+    fn greet(&self) -> String;
+
+    // Greets the user with a message asynchronously.
+    fn greet_async(&self) -> impl Future<Output = String>;
+}
+
+#[maybe_fut::maybe_fut(
+    sync = SyncTestStruct,
+    tokio = TokioTestStruct,
+    tokio_feature = "tokio",
+)]
+impl<T> Greet for TestStruct<T>
+where
+    T: Sized + Copy + Display,
+{
+    fn greet(&self) -> String {
+        format!("Hello, I'm {}", self.value)
+    }
+
+    async fn greet_async(&self) -> String {
+        format!("Hello, I'm {}", self.value)
+    }
+}
+
+#[cfg(feature = "tokio")]
+{
+    let test_struct = TokioTestStruct::new(42);
+    test_struct.greet();
+    test_struct.greet_async().await;
+}
 ```
 
 ## Limitations
