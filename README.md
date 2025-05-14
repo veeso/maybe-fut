@@ -154,8 +154,8 @@ cargo run --example fs-client --features tokio-fs -- /tmp/test.txt
 
 Currently, there are some limitations with the proc macro, so the following features are still not supported:
 
-- [ ] traits
-- [ ] generics
+- [ ] Traits
+- [ ] Generics
 - [ ] Builders (e.g. `fn foo(mut self) -> Self`)
 - [ ] Derive of the inner type
 
@@ -163,7 +163,7 @@ Currently, there are some limitations with the proc macro, so the following feat
 
 ## Support the developer
 
-If you like **SuppaFTP**, please consider a little donation 🥳
+If you like **maybe-fut**, please consider a little donation 🥳
 
 [![ko-fi](https://img.shields.io/badge/Ko--fi-F16061?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/veeso)
 [![PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.me/chrisintin)
