@@ -2,7 +2,7 @@ use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::{ToTokens, quote};
 use syn::punctuated::Punctuated;
-use syn::{Ident, ImplItemFn, Type, parse_macro_input};
+use syn::{Ident, ImplItemFn, ItemImpl, Type};
 
 use super::args::MaybeFutArgs;
 
@@ -12,10 +12,8 @@ pub fn maybe_fut_struct(
         tokio: tokio_struct_name,
         tokio_feature,
     }: MaybeFutArgs,
-    item: TokenStream,
+    ast: ItemImpl,
 ) -> TokenStream {
-    let ast = parse_macro_input!(item as syn::ItemImpl);
-
     // get struct name of impl
     let implementing_for = match implementing_for(&ast) {
         Ok(ident) => ident,
@@ -30,13 +28,34 @@ pub fn maybe_fut_struct(
         }
     }
 
+    let trait_impl = &ast.trait_;
+
     // make sync structure block
     let sync_quoted_methods = gen_methods(&implementing_for, &ast.self_ty, &methods, false);
 
     // make async structure block
     let async_quoted_methods = gen_methods(&implementing_for, &ast.self_ty, &methods, true);
 
-    let output = quote! {
+    // check if we have a trait impl; in case it's a trait, we always return the `async_quoted_methods`, because if
+    // a function is async, we cannot get rid of that in the sync impl
+    if let Some((_, trait_name, for_token)) = trait_impl {
+        return quote! {
+            impl #trait_name #for_token #sync_struct_name {
+                #(#async_quoted_methods)*
+            }
+
+            #[cfg(feature = #tokio_feature)]
+            impl #trait_name #for_token #tokio_struct_name {
+                #(#async_quoted_methods)*
+            }
+
+            #ast
+        }
+        .into();
+    }
+
+    // Normal impl block
+    quote! {
         pub struct #sync_struct_name(#implementing_for);
 
         impl #sync_struct_name {
@@ -52,9 +71,8 @@ pub fn maybe_fut_struct(
         }
 
         #ast
-    };
-
-    output.into()
+    }
+    .into()
 }
 
 /// Extracts the implementing type from the `ItemImpl` AST node.
