@@ -1,4 +1,4 @@
-//! This module contains the test for the `maybe_fut` macro.
+//! This module contains the test for the `maybe_fut` macro for traits.
 
 use maybe_fut_derive::maybe_fut;
 

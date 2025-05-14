@@ -154,7 +154,6 @@ cargo run --example fs-client --features tokio-fs -- /tmp/test.txt
 
 Currently, there are some limitations with the proc macro, so the following features are still not supported:
 
-- [ ] Generics
 - [ ] Builders (e.g. `fn foo(mut self) -> Self`)
 - [ ] Derive of the inner type
 
