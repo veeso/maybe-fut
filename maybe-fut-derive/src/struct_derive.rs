@@ -31,10 +31,10 @@ pub fn maybe_fut_struct(
     }
 
     // make sync structure block
-    let sync_quoted_methods = sync_methods(&implementing_for, &ast.self_ty, &methods);
+    let sync_quoted_methods = gen_methods(&implementing_for, &ast.self_ty, &methods, false);
 
     // make async structure block
-    let async_quoted_methods = async_methods(&implementing_for, &ast.self_ty, &methods);
+    let async_quoted_methods = gen_methods(&implementing_for, &ast.self_ty, &methods, true);
 
     let output = quote! {
         pub struct #sync_struct_name(#implementing_for);
@@ -81,67 +81,12 @@ fn implementing_for(ast: &syn::ItemImpl) -> Result<syn::Ident, TokenStream> {
     }
 }
 
-/// Generates sync methods for the given methods in the impl block.
-fn sync_methods(
+/// Generates sync or async (based on value of `async_methods`) methods for the given methods in the impl block.
+fn gen_methods(
     implementing_for: &Ident,
     self_ty: &Type,
     methods: &[ImplItemFn],
-) -> Vec<TokenStream2> {
-    methods
-        .iter()
-        .map(|method| {
-            let visibility = &method.vis;
-            let method_name = &method.sig.ident;
-            let args = &method.sig.inputs;
-            let ret_type = &method.sig.output;
-            let asyncness = method.sig.asyncness.is_some();
-            let attrs = &method.attrs;
-            let mut first_is_self = false;
-            let constness = method.sig.constness;
-
-            let call_args = call_args(args, &mut first_is_self);
-            let is_constructor = is_constructor(self_ty, method);
-
-            let fn_body = if is_constructor {
-                quote! {
-                    Self(#implementing_for::#method_name(#call_args))
-                }
-            } else if !first_is_self {
-                quote! {
-                     #implementing_for::#method_name(#call_args)
-                }
-            } else {
-                quote! {
-                    self.0.#method_name(#call_args)
-                }
-            };
-
-            if asyncness {
-                quote! {
-                    #(#attrs)*
-                    #visibility #constness fn #method_name(#args) #ret_type {
-                        ::maybe_fut::SyncRuntime::block_on(
-                            #fn_body
-                        )
-                    }
-                }
-            } else {
-                quote! {
-                    #(#attrs)*
-                    #visibility #constness fn #method_name(#args) #ret_type {
-                        #fn_body
-                    }
-                }
-            }
-        })
-        .collect()
-}
-
-/// Generates async methods for the given methods in the impl block.
-fn async_methods(
-    implementing_for: &Ident,
-    self_ty: &Type,
-    methods: &[ImplItemFn],
+    async_methods: bool,
 ) -> Vec<TokenStream2> {
     methods
         .iter()
@@ -151,15 +96,15 @@ fn async_methods(
             let args = &method.sig.inputs;
             let ret_type = &method.sig.output;
             let asyncness = method.sig.asyncness;
-            let constness = method.sig.constness;
             let is_async = asyncness.is_some();
             let attrs = &method.attrs;
             let mut first_is_self = false;
+            let constness = method.sig.constness;
 
             let call_args = call_args(args, &mut first_is_self);
-            let is_constructor = is_constructor(self_ty, method);
+            let constructor_args = is_constructor(self_ty, method);
 
-            let await_block = if is_async {
+            let await_block = if is_async && async_methods {
                 quote! {
                     .await
                 }
@@ -167,9 +112,19 @@ fn async_methods(
                 quote! {}
             };
 
-            let fn_body = if is_constructor {
-                quote! {
-                    Self(#implementing_for::#method_name(#call_args)#await_block)
+            let fn_body = if let Some(constructor_args) = constructor_args {
+                if constructor_args.is_result {
+                    quote! {
+                        Ok(Self(#implementing_for::#method_name(#call_args)#await_block?))
+                    }
+                } else if constructor_args.is_option {
+                    quote! {
+                        Some(Self(#implementing_for::#method_name(#call_args)#await_block?))
+                    }
+                } else {
+                    quote! {
+                        Self(#implementing_for::#method_name(#call_args)#await_block)
+                    }
                 }
             } else if !first_is_self {
                 quote! {
@@ -181,18 +136,34 @@ fn async_methods(
                 }
             };
 
-            quote! {
-                #(#attrs)*
-                #visibility #constness #asyncness fn #method_name(#args) #ret_type {
-                    #fn_body
+            if is_async && !async_methods {
+                quote! {
+                    #(#attrs)*
+                    #visibility #constness fn #method_name(#args) #ret_type {
+                        ::maybe_fut::SyncRuntime::block_on(
+                            #fn_body
+                        )
+                    }
+                }
+            } else {
+                quote! {
+                    #(#attrs)*
+                    #visibility #constness #asyncness fn #method_name(#args) #ret_type {
+                        #fn_body
+                    }
                 }
             }
         })
         .collect()
 }
 
+struct ConstructorParams {
+    pub is_result: bool,
+    pub is_option: bool,
+}
+
 /// Returns whether the method is a constructor for the
-fn is_constructor(self_ty: &Type, method: &ImplItemFn) -> bool {
+fn is_constructor(self_ty: &Type, method: &ImplItemFn) -> Option<ConstructorParams> {
     // check if this is a constructor of the inner type
     if let syn::ReturnType::Type(_, ty) = &method.sig.output {
         let mut a_tokens = proc_macro2::TokenStream::new();
@@ -200,7 +171,10 @@ fn is_constructor(self_ty: &Type, method: &ImplItemFn) -> bool {
         ty.to_tokens(&mut a_tokens);
         self_ty.to_tokens(&mut b_tokens);
         if a_tokens.to_string() == b_tokens.to_string() {
-            return true;
+            return Some(ConstructorParams {
+                is_result: false,
+                is_option: false,
+            });
         }
     }
 
@@ -208,12 +182,59 @@ fn is_constructor(self_ty: &Type, method: &ImplItemFn) -> bool {
     if let syn::ReturnType::Type(_, ty) = &method.sig.output {
         if let syn::Type::Path(type_path) = ty.as_ref() {
             if type_path.path.is_ident("Self") {
-                return true;
+                return Some(ConstructorParams {
+                    is_result: false,
+                    is_option: false,
+                });
             }
         }
     }
 
-    false
+    // check if the output is Result<Self, _>
+    if let syn::ReturnType::Type(_, ty) = &method.sig.output {
+        if let syn::Type::Path(type_path) = ty.as_ref() {
+            if let Some(segment) = type_path.path.segments.last() {
+                if segment.ident == "Result" {
+                    if let syn::PathArguments::AngleBracketed(ref args) = segment.arguments {
+                        if let Some(syn::GenericArgument::Type(syn::Type::Path(inner_type_path))) =
+                            args.args.first()
+                        {
+                            if inner_type_path.path.is_ident("Self") {
+                                return Some(ConstructorParams {
+                                    is_result: true,
+                                    is_option: false,
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // check if the output is Option<Self>
+    if let syn::ReturnType::Type(_, ty) = &method.sig.output {
+        if let syn::Type::Path(type_path) = ty.as_ref() {
+            if let Some(segment) = type_path.path.segments.last() {
+                if segment.ident == "Option" {
+                    if let syn::PathArguments::AngleBracketed(ref args) = segment.arguments {
+                        if let Some(syn::GenericArgument::Type(syn::Type::Path(inner_type_path))) =
+                            args.args.first()
+                        {
+                            if inner_type_path.path.is_ident("Self") {
+                                return Some(ConstructorParams {
+                                    is_result: false,
+                                    is_option: true,
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    None
 }
 
 /// Returns the call arguments for the method with self removed.
