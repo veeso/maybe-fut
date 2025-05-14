@@ -156,8 +156,8 @@ Currently, there are some limitations with the proc macro, so the following feat
 
 - [ ] traits
 - [ ] generics
-- [ ] Constructors which return `Result<T, E>` or `Option<T>`
 - [ ] Builders (e.g. `fn foo(mut self) -> Self`)
+- [ ] Derive of the inner type
 
 ---
 
