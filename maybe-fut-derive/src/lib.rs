@@ -27,5 +27,16 @@ pub fn maybe_fut(attr: TokenStream, item: TokenStream) -> TokenStream {
         }
     };
 
-    struct_derive::maybe_fut_struct(args, item)
+    // check if the item is an impl block for a struct
+    if let Ok(struct_item) = syn::parse::<syn::ItemImpl>(item) {
+        return struct_derive::maybe_fut_struct(args, struct_item);
+    }
+
+    // error
+    syn::Error::new(
+        proc_macro2::Span::call_site(),
+        "maybe_fut can only be used on impl blocks",
+    )
+    .into_compile_error()
+    .into()
 }
