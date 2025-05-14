@@ -2,7 +2,7 @@ use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::{ToTokens, quote};
 use syn::punctuated::Punctuated;
-use syn::{Ident, ImplItemFn, ItemImpl, Type};
+use syn::{Generics, Ident, ImplItemFn, ItemImpl, Type};
 
 use super::args::MaybeFutArgs;
 
@@ -28,24 +28,31 @@ pub fn maybe_fut_struct(
         }
     }
 
+    // get generics impl parameters
+    let generics = &ast.generics;
+    // get generics parameters
+    let where_clause = &ast.generics.where_clause;
+    // get trait impl
     let trait_impl = &ast.trait_;
 
     // make sync structure block
-    let sync_quoted_methods = gen_methods(&implementing_for, &ast.self_ty, &methods, false);
+    let sync_quoted_methods =
+        gen_methods(&implementing_for, &ast.self_ty, generics, &methods, false);
 
     // make async structure block
-    let async_quoted_methods = gen_methods(&implementing_for, &ast.self_ty, &methods, true);
+    let async_quoted_methods =
+        gen_methods(&implementing_for, &ast.self_ty, generics, &methods, true);
 
     // check if we have a trait impl; in case it's a trait, we always return the `async_quoted_methods`, because if
     // a function is async, we cannot get rid of that in the sync impl
     if let Some((_, trait_name, for_token)) = trait_impl {
         return quote! {
-            impl #trait_name #for_token #sync_struct_name {
+            impl #generics #trait_name #for_token #sync_struct_name #generics #where_clause {
                 #(#async_quoted_methods)*
             }
 
             #[cfg(feature = #tokio_feature)]
-            impl #trait_name #for_token #tokio_struct_name {
+            impl #generics #trait_name #for_token #tokio_struct_name #generics #where_clause {
                 #(#async_quoted_methods)*
             }
 
@@ -56,17 +63,21 @@ pub fn maybe_fut_struct(
 
     // Normal impl block
     quote! {
-        pub struct #sync_struct_name(#implementing_for);
+        pub struct #sync_struct_name #generics (#implementing_for #generics) #where_clause;
 
-        impl #sync_struct_name {
+        impl #generics #sync_struct_name #generics
+        #where_clause
+        {
             #(#sync_quoted_methods)*
         }
 
         #[cfg(feature = #tokio_feature)]
-        pub struct #tokio_struct_name(#implementing_for);
+        pub struct #tokio_struct_name #generics (#implementing_for #generics) #where_clause;
 
         #[cfg(feature = #tokio_feature)]
-        impl #tokio_struct_name {
+        impl #generics #tokio_struct_name #generics
+        #where_clause
+        {
             #(#async_quoted_methods)*
         }
 
@@ -103,6 +114,7 @@ fn implementing_for(ast: &syn::ItemImpl) -> Result<syn::Ident, TokenStream> {
 fn gen_methods(
     implementing_for: &Ident,
     self_ty: &Type,
+    generics: &Generics,
     methods: &[ImplItemFn],
     async_methods: bool,
 ) -> Vec<TokenStream2> {
@@ -130,23 +142,29 @@ fn gen_methods(
                 quote! {}
             };
 
+            let generics_block = if generics.params.is_empty() {
+                quote! {}
+            } else {
+                quote! { ::#generics }
+            };
+
             let fn_body = if let Some(constructor_args) = constructor_args {
                 if constructor_args.is_result {
                     quote! {
-                        Ok(Self(#implementing_for::#method_name(#call_args)#await_block?))
+                        Ok(Self(#implementing_for #generics_block::#method_name(#call_args)#await_block?))
                     }
                 } else if constructor_args.is_option {
                     quote! {
-                        Some(Self(#implementing_for::#method_name(#call_args)#await_block?))
+                        Some(Self(#implementing_for #generics_block::#method_name(#call_args)#await_block?))
                     }
                 } else {
                     quote! {
-                        Self(#implementing_for::#method_name(#call_args)#await_block)
+                        Self(#implementing_for #generics_block::#method_name(#call_args)#await_block)
                     }
                 }
             } else if !first_is_self {
                 quote! {
-                     #implementing_for::#method_name(#call_args)#await_block
+                     #implementing_for #generics_block::#method_name(#call_args)#await_block
                 }
             } else {
                 quote! {
