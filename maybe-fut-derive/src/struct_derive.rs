@@ -120,7 +120,7 @@ fn sync_methods(
                 quote! {
                     #(#attrs)*
                     #visibility #constness fn #method_name(#args) #ret_type {
-                        maybe_fut::SyncRuntime::block_on(
+                        ::maybe_fut::SyncRuntime::block_on(
                             #fn_body
                         )
                     }
