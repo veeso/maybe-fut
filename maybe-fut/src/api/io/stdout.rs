@@ -1,6 +1,7 @@
 /// A handle to the standard output stream of a process.
-#[derive(Debug, Write)]
+#[derive(Debug, Write, Unwrap)]
 #[io(feature("tokio"))]
+#[unwrap_types(std(std::io::Stdout), tokio(tokio::io::Stdout), tokio_gated("tokio"))]
 pub struct Stdout(StdoutInner);
 
 #[derive(Debug)]

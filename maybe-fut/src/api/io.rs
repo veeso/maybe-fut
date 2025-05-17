@@ -9,10 +9,14 @@
 
 mod read;
 mod seek;
+mod stderr;
+mod stdin;
 mod stdout;
 mod write;
 
 pub use self::read::Read;
 pub use self::seek::Seek;
+pub use self::stderr::{Stderr, stderr};
+pub use self::stdin::{Stdin, stdin};
 pub use self::stdout::{Stdout, stdout};
 pub use self::write::Write;
