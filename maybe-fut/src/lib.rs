@@ -14,6 +14,8 @@
 )]
 
 #[macro_use]
+extern crate maybe_fut_io_derive;
+#[macro_use]
 extern crate maybe_fut_unwrap_derive;
 
 // private api
