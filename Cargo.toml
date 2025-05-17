@@ -26,6 +26,7 @@ categories = ["asynchronous"]
 [workspace.dependencies]
 cfg_aliases = "0.2"
 criterion = { version = "0.6", features = ["async_tokio"] }
+memchr = "2"
 pretty_assertions = "1"
 proc-macro2 = "1"
 quote = "1"

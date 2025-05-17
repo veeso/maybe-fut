@@ -29,6 +29,7 @@ path = "src/lib.rs"
 maybe-fut-derive = { path = "../maybe-fut-derive", version = "0.1" }
 maybe-fut-io-derive = { path = "../maybe-fut-io-derive", version = "0.1" }
 maybe-fut-unwrap-derive = { path = "../maybe-fut-unwrap-derive", version = "0.1" }
+memchr = { workspace = true }
 tokio = { workspace = true, default-features = false, features = [
   "io-std",
   "io-util",

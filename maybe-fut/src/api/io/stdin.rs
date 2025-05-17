@@ -56,9 +56,9 @@ impl std::os::fd::AsFd for Stdin {
 impl std::os::windows::io::AsHandle for Stdin {
     fn as_handle(&self) -> std::os::windows::io::BorrowedHandle<'_> {
         match &self.0 {
-            FileInner::Std(file) => file.as_handle(),
+            StdinInner::Std(file) => file.as_handle(),
             #[cfg(tokio)]
-            FileInner::Tokio(file) => file.as_handle(),
+            StdinInner::Tokio(file) => file.as_handle(),
         }
     }
 }
