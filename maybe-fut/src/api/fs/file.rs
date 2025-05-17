@@ -6,7 +6,8 @@ use std::path::Path;
 use super::OpenOptions;
 use crate::{maybe_fut_constructor_result, maybe_fut_method};
 
-#[derive(Debug, Unwrap)]
+#[derive(Debug, Read, Seek, Write, Unwrap)]
+#[io(feature("tokio-fs"))]
 #[unwrap_types(std(std::fs::File), tokio(tokio::fs::File), tokio_gated("tokio-fs"))]
 /// A reference to an open file on the filesystem.
 pub struct File(FileInner);
@@ -173,6 +174,28 @@ impl File {
             FileInner::Tokio(file) => file.try_clone().await.map(Self::from),
         }
     }
+    /// Converts the [`File`] inner instance to a [`std::fs::File`] instance if it is currently a [`tokio::fs::File`].
+    ///
+    /// This can be useful when you need for instance to pass an `impl std::io::Write` to a function.
+    pub async fn to_std(self) -> std::fs::File {
+        match self.0 {
+            FileInner::Std(file) => file,
+            #[cfg(tokio_fs)]
+            FileInner::Tokio(file) => file.into_std().await,
+        }
+    }
+
+    /// Converts the [`File`] inner instance to a [`tokio::fs::File`] instance if it is currently a [`std::fs::File`].
+    ///
+    /// This can be useful when you need for instance to pass an `impl tokio::io::AsyncWrite` to a function.
+    #[cfg(tokio_fs)]
+    #[cfg_attr(docsrs, doc(cfg(feature = "tokio-fs")))]
+    pub async fn to_tokio(self) -> tokio::fs::File {
+        match self.0 {
+            FileInner::Std(file) => tokio::fs::File::from_std(file),
+            FileInner::Tokio(file) => file,
+        }
+    }
 }
 
 #[cfg(unix)]
@@ -274,6 +297,7 @@ mod test {
 
     use super::*;
     use crate::SyncRuntime;
+    use crate::io::{Read, Seek, Write};
 
     #[test]
     fn test_should_instantiate_file_sync() {
@@ -340,5 +364,136 @@ mod test {
             .metadata()
             .await
             .expect("Failed to get metadata");
+    }
+
+    #[test]
+    fn test_should_convert_to_std() {
+        let temp = NamedTempFile::new().expect("Failed to create temp file");
+
+        // write file
+        std::fs::write(temp.path(), b"Hello world").expect("Failed to write file");
+
+        let file = SyncRuntime::block_on(File::open(temp.path())).expect("Failed to open file");
+        let _std_file = SyncRuntime::block_on(file.to_std());
+    }
+
+    #[tokio::test]
+    async fn test_should_convert_to_tokio() {
+        let temp = NamedTempFile::new().expect("Failed to create temp file");
+
+        // write file
+        std::fs::write(temp.path(), b"Hello world").expect("Failed to write file");
+
+        let file = File::open(temp.path()).await.expect("Failed to open file");
+        let _tokio_file = file.to_tokio().await;
+    }
+
+    #[test]
+    fn test_should_convert_to_std_sync() {
+        let temp = NamedTempFile::new().expect("Failed to create temp file");
+
+        // write file
+        std::fs::write(temp.path(), b"Hello world").expect("Failed to write file");
+
+        let file = SyncRuntime::block_on(File::open(temp.path())).expect("Failed to open file");
+        let _std_file = SyncRuntime::block_on(file.to_tokio());
+    }
+
+    #[tokio::test]
+    async fn test_should_convert_to_tokio_async() {
+        let temp = NamedTempFile::new().expect("Failed to create temp file");
+
+        // write file
+        std::fs::write(temp.path(), b"Hello world").expect("Failed to write file");
+
+        let file = File::open(temp.path()).await.expect("Failed to open file");
+        let _tokio_file = file.to_tokio().await;
+    }
+
+    #[test]
+    fn test_should_read_sync() {
+        let temp = NamedTempFile::new().expect("Failed to create temp file");
+
+        // write file
+        std::fs::write(temp.path(), b"Hello world").expect("Failed to write file");
+
+        let mut file = SyncRuntime::block_on(File::open(temp.path())).expect("Failed to open file");
+        let mut buf = vec![0; 11];
+        SyncRuntime::block_on(file.read(&mut buf)).expect("Failed to read file");
+        assert_eq!(buf, b"Hello world");
+    }
+
+    #[tokio::test]
+    async fn test_should_read_async() {
+        let temp = NamedTempFile::new().expect("Failed to create temp file");
+
+        // write file
+        std::fs::write(temp.path(), b"Hello world").expect("Failed to write file");
+
+        let mut file = File::open(temp.path()).await.expect("Failed to open file");
+        let mut buf = vec![0; 11];
+        file.read(&mut buf).await.expect("Failed to read file");
+        assert_eq!(buf, b"Hello world");
+    }
+
+    #[test]
+    fn test_should_write_sync() {
+        let temp = NamedTempFile::new().expect("Failed to create temp file");
+
+        let mut file =
+            SyncRuntime::block_on(File::create(temp.path())).expect("Failed to open file");
+        SyncRuntime::block_on(file.write(b"Hello world")).expect("Failed to write file");
+        SyncRuntime::block_on(file.flush()).expect("Failed to flush file");
+
+        let buf = std::fs::read(temp.path()).expect("Failed to read file");
+        assert_eq!(buf, b"Hello world");
+    }
+
+    #[tokio::test]
+    async fn test_should_write_async() {
+        let temp = NamedTempFile::new().expect("Failed to create temp file");
+
+        let mut file = File::create(temp.path())
+            .await
+            .expect("Failed to open file");
+        file.write(b"Hello world")
+            .await
+            .expect("Failed to write file");
+        file.flush().await.expect("Failed to flush file");
+
+        let buf = tokio::fs::read(temp.path())
+            .await
+            .expect("Failed to read file");
+        assert_eq!(buf, b"Hello world");
+    }
+
+    #[test]
+    fn test_should_seek_sync() {
+        let temp = NamedTempFile::new().expect("Failed to create temp file");
+
+        // write file
+        std::fs::write(temp.path(), b"Hello world").expect("Failed to write file");
+
+        let mut file = SyncRuntime::block_on(File::open(temp.path())).expect("Failed to open file");
+        let mut buf = vec![0; 5];
+        SyncRuntime::block_on(file.seek(std::io::SeekFrom::Start(6))).expect("Failed to seek file");
+        SyncRuntime::block_on(file.read(&mut buf)).expect("Failed to read file");
+        assert_eq!(buf, b"world");
+    }
+
+    #[tokio::test]
+    async fn test_should_seek_async() {
+        let temp = NamedTempFile::new().expect("Failed to create temp file");
+
+        // write file
+        std::fs::write(temp.path(), b"Hello world").expect("Failed to write file");
+
+        let mut file = File::open(temp.path()).await.expect("Failed to open file");
+        let mut buf = vec![0; 5];
+        file.seek(std::io::SeekFrom::Start(6))
+            .await
+            .expect("Failed to seek file");
+        file.read(&mut buf).await.expect("Failed to read file");
+        assert_eq!(buf, b"world");
     }
 }

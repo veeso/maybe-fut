@@ -2,18 +2,23 @@ use std::hint::black_box;
 use std::path::Path;
 
 use criterion::{Criterion, criterion_group, criterion_main};
-use tokio::runtime::Runtime;
+use maybe_fut::io::Write as _;
+use tokio::{io::AsyncWriteExt as _, runtime::Runtime};
 
 async fn is_async_context() {
     maybe_fut::is_async_context();
 }
 
 async fn tokio_create_file(path: &Path) {
-    tokio::fs::File::create(path).await.unwrap();
+    let mut f = tokio::fs::File::create(path).await.unwrap();
+    f.write_all(b"Hello, world!").await.unwrap();
+    f.flush().await.unwrap();
 }
 
 async fn maybe_fut_create_file(path: &Path) {
-    maybe_fut::fs::File::create(path).await.unwrap();
+    let mut f = maybe_fut::fs::File::create(path).await.unwrap();
+    f.write_all(b"Hello, world!").await.unwrap();
+    f.flush().await.unwrap();
 }
 
 fn benchmark_is_async_context(c: &mut Criterion) {
