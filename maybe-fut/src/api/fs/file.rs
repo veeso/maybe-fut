@@ -200,9 +200,6 @@ impl File {
 
 #[cfg(unix)]
 impl std::os::fd::AsFd for File {
-    /// Returns a reference to the underlying file descriptor.
-    ///
-    /// This function is useful for passing the file descriptor to other APIs that require it.
     fn as_fd(&self) -> std::os::fd::BorrowedFd<'_> {
         match &self.0 {
             FileInner::Std(file) => file.as_fd(),
@@ -214,9 +211,6 @@ impl std::os::fd::AsFd for File {
 
 #[cfg(windows)]
 impl std::os::windows::io::AsHandle for File {
-    /// Returns a reference to the underlying file handle.
-    ///
-    /// This function is useful for passing the file handle to other APIs that require it.
     fn as_handle(&self) -> std::os::windows::io::BorrowedHandle<'_> {
         match &self.0 {
             FileInner::Std(file) => file.as_handle(),
@@ -228,9 +222,6 @@ impl std::os::windows::io::AsHandle for File {
 
 #[cfg(unix)]
 impl std::os::fd::AsRawFd for File {
-    /// Returns the raw file descriptor.
-    ///
-    /// This function is useful for passing the file descriptor to other APIs that require it.
     fn as_raw_fd(&self) -> std::os::fd::RawFd {
         match &self.0 {
             FileInner::Std(file) => file.as_raw_fd(),
@@ -240,11 +231,19 @@ impl std::os::fd::AsRawFd for File {
     }
 }
 
+#[cfg(windows)]
+impl std::os::windows::io::AsRawHandle for File {
+    fn as_raw_handle(&self) -> std::os::windows::io::RawHandle {
+        match &self.0 {
+            FileInner::Std(file) => file.as_raw_handle(),
+            #[cfg(tokio_fs)]
+            FileInner::Tokio(file) => file.as_raw_handle(),
+        }
+    }
+}
+
 #[cfg(unix)]
 impl std::os::fd::FromRawFd for File {
-    /// Creates a new [`File`] instance from a raw file descriptor.
-    ///
-    /// This function is useful for creating a [`File`] instance from a file descriptor that was obtained from another API.
     unsafe fn from_raw_fd(fd: std::os::fd::RawFd) -> Self {
         #[cfg(tokio_fs)]
         {
@@ -265,9 +264,6 @@ impl std::os::fd::FromRawFd for File {
 
 #[cfg(windows)]
 impl std::os::windows::io::FromRawHandle for File {
-    /// Creates a new [`File`] instance from a raw file handle.
-    ///
-    /// This function is useful for creating a [`File`] instance from a file handle that was obtained from another API.
     unsafe fn from_raw_handle(handle: std::os::windows::io::RawHandle) -> Self {
         #[cfg(tokio_fs)]
         {

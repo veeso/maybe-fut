@@ -3,7 +3,8 @@ use std::path::Path;
 
 use criterion::{Criterion, criterion_group, criterion_main};
 use maybe_fut::io::Write as _;
-use tokio::{io::AsyncWriteExt as _, runtime::Runtime};
+use tokio::io::AsyncWriteExt as _;
+use tokio::runtime::Runtime;
 
 async fn is_async_context() {
     maybe_fut::is_async_context();
