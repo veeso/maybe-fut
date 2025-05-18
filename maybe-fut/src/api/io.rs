@@ -9,6 +9,7 @@
 
 mod buf_reader;
 mod buf_writer;
+mod empty;
 mod lines;
 mod read;
 mod seek;
@@ -21,6 +22,7 @@ mod write;
 
 pub use self::buf_reader::{BufRead, BufReader};
 pub use self::buf_writer::BufWriter;
+pub use self::empty::{Empty, empty};
 pub use self::lines::Lines;
 pub use self::read::Read;
 pub use self::seek::Seek;
