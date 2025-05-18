@@ -8,6 +8,7 @@
 //! - tokio: <https://docs.rs/tokio/latest/tokio/io/index.html>
 
 mod buf_reader;
+mod buf_writer;
 mod lines;
 mod read;
 mod seek;
@@ -18,6 +19,7 @@ mod stdout;
 mod write;
 
 pub use self::buf_reader::{BufRead, BufReader};
+pub use self::buf_writer::BufWriter;
 pub use self::lines::Lines;
 pub use self::read::Read;
 pub use self::seek::Seek;

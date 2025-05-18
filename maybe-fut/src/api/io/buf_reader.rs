@@ -232,7 +232,7 @@ mod test {
         let mut buf = BufReader::new(Buffer::new(data.to_vec()));
 
         buf.consume(6).await;
-        assert_eq!(buf.buffer(), []);
+        assert!(buf.buffer().is_empty());
     }
 
     #[tokio::test]
@@ -340,7 +340,7 @@ mod test {
     async fn test_should_buffer() {
         let data = b"line1\nline2\r\nline3\n";
         let buf = BufReader::new(Buffer::new(data.to_vec()));
-        assert_eq!(buf.buffer(), []);
+        assert!(buf.buffer().is_empty());
     }
 
     #[tokio::test]
