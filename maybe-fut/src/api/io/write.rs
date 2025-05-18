@@ -56,14 +56,14 @@ mod test {
     }
 
     impl Write for MockWriter {
-        fn write(&mut self, buf: &[u8]) -> impl Future<Output = std::io::Result<usize>> {
+        async fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
             let n = buf.len();
             self.data.extend_from_slice(buf);
-            async move { Ok(n) }
+            Ok(n)
         }
 
-        fn flush(&mut self) -> impl Future<Output = std::io::Result<()>> {
-            async move { Ok(()) }
+        async fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
         }
     }
 

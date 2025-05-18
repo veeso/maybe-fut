@@ -47,21 +47,19 @@ mod test {
     }
 
     impl Seek for MockSeek {
-        fn seek(&mut self, pos: SeekFrom) -> impl Future<Output = std::io::Result<u64>> {
-            async move {
-                match pos {
-                    SeekFrom::Start(offset) => {
-                        self.position = offset;
-                    }
-                    SeekFrom::Current(offset) => {
-                        self.position = self.position.saturating_add(offset as u64);
-                    }
-                    SeekFrom::End(offset) => {
-                        self.position = self.max_size.saturating_add(offset) as u64;
-                    }
+        async fn seek(&mut self, pos: SeekFrom) -> std::io::Result<u64> {
+            match pos {
+                SeekFrom::Start(offset) => {
+                    self.position = offset;
                 }
-                Ok(self.position)
+                SeekFrom::Current(offset) => {
+                    self.position = self.position.saturating_add(offset as u64);
+                }
+                SeekFrom::End(offset) => {
+                    self.position = self.max_size.saturating_add(offset) as u64;
+                }
             }
+            Ok(self.position)
         }
     }
 
