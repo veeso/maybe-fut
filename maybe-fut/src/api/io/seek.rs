@@ -27,3 +27,49 @@ pub trait Seek {
         self.seek(SeekFrom::Current(offset))
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    struct MockSeek {
+        position: u64,
+        max_size: i64,
+    }
+
+    impl MockSeek {
+        fn new(max_size: i64) -> Self {
+            Self {
+                position: 0,
+                max_size,
+            }
+        }
+    }
+
+    impl Seek for MockSeek {
+        fn seek(&mut self, pos: SeekFrom) -> impl Future<Output = std::io::Result<u64>> {
+            async move {
+                match pos {
+                    SeekFrom::Start(offset) => {
+                        self.position = offset;
+                    }
+                    SeekFrom::Current(offset) => {
+                        self.position = self.position.saturating_add(offset as u64);
+                    }
+                    SeekFrom::End(offset) => {
+                        self.position = self.max_size.saturating_add(offset) as u64;
+                    }
+                }
+                Ok(self.position)
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn test_seek() {
+        let mut seek = MockSeek::new(50);
+        assert_eq!(seek.seek(SeekFrom::Start(10)).await.unwrap(), 10);
+        assert_eq!(seek.seek(SeekFrom::Current(5)).await.unwrap(), 15);
+        assert_eq!(seek.seek(SeekFrom::End(-5)).await.unwrap(), 45);
+    }
+}

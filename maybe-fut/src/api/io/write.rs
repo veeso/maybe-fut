@@ -45,3 +45,55 @@ pub trait Write {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+
+    use super::*;
+
+    struct MockWriter {
+        data: Vec<u8>,
+    }
+
+    impl Write for MockWriter {
+        fn write(&mut self, buf: &[u8]) -> impl Future<Output = std::io::Result<usize>> {
+            let n = buf.len();
+            self.data.extend_from_slice(buf);
+            async move { Ok(n) }
+        }
+
+        fn flush(&mut self) -> impl Future<Output = std::io::Result<()>> {
+            async move { Ok(()) }
+        }
+    }
+
+    #[tokio::test]
+    async fn test_write() {
+        let mut writer = MockWriter { data: Vec::new() };
+        let buf = b"Hello, world!";
+        let n = writer.write(buf).await.unwrap();
+        assert_eq!(n, buf.len());
+        assert_eq!(writer.data, buf);
+    }
+
+    #[tokio::test]
+    async fn test_write_vectored() {
+        let mut writer = MockWriter { data: Vec::new() };
+        let bufs = [b"Hello,", b"world!"];
+        let slices = bufs
+            .into_iter()
+            .map(|b| IoSlice::new(b))
+            .collect::<Vec<_>>();
+        let n = writer.write_vectored(&slices).await.unwrap();
+        assert_eq!(n, bufs.iter().map(|b| b.len()).sum::<usize>());
+        assert_eq!(writer.data, b"Hello,world!");
+    }
+
+    #[tokio::test]
+    async fn test_write_all() {
+        let mut writer = MockWriter { data: Vec::new() };
+        let buf = b"Hello, world!";
+        writer.write_all(buf).await.unwrap();
+        assert_eq!(writer.data, buf);
+    }
+}
