@@ -22,3 +22,45 @@ impl<B: BufRead> Split<B> {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+
+    use super::*;
+    use crate::io::{BufReader, Read};
+
+    #[tokio::test]
+    async fn test_should_return_tokens() {
+        let data = b"line1|line2|line3";
+        let buf = BufReader::new(Buffer::new(data.to_vec()));
+        let mut tokens = Split { buf, delim: b'|' };
+
+        assert_eq!(tokens.next().await.unwrap().unwrap(), b"line1");
+        assert_eq!(tokens.next().await.unwrap().unwrap(), b"line2");
+        assert_eq!(tokens.next().await.unwrap().unwrap(), b"line3");
+        assert!(tokens.next().await.is_none());
+    }
+
+    struct Buffer {
+        data: Vec<u8>,
+        pos: usize,
+    }
+
+    impl Buffer {
+        fn new(data: Vec<u8>) -> Self {
+            Self { data, pos: 0 }
+        }
+    }
+
+    impl Read for Buffer {
+        async fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+            if self.pos >= self.data.len() {
+                return Ok(0);
+            }
+            let n = std::cmp::min(buf.len(), self.data.len() - self.pos);
+            buf[..n].copy_from_slice(&self.data[self.pos..self.pos + n]);
+            self.pos += n;
+            Ok(n)
+        }
+    }
+}
