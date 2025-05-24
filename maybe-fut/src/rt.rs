@@ -7,6 +7,8 @@ use std::task::{Context, Poll, Waker};
 ///
 /// This type should be used only when exporting the sync api of a library using
 /// maybe-fut to create an interoperable async/sync api.
+///
+/// Can also be run using [`block_on`] function.
 pub struct SyncRuntime;
 
 impl SyncRuntime {
@@ -26,6 +28,16 @@ impl SyncRuntime {
     }
 }
 
+/// Blocks on a future in a sync context.
+///
+/// It is equivalent to calling [`SyncRuntime::block_on`].
+pub fn block_on<F>(f: F) -> F::Output
+where
+    F: Future,
+{
+    SyncRuntime::block_on(f)
+}
+
 #[cfg(test)]
 mod test {
 
@@ -36,6 +48,12 @@ mod test {
     #[test]
     fn test_should_execute_async_code_in_sync_context() {
         let result = SyncRuntime::block_on(async_fn());
+        assert_eq!(result, 42);
+    }
+
+    #[test]
+    fn test_should_execute_async_code_in_sync_context_with_block_on() {
+        let result = block_on(async_fn());
         assert_eq!(result, 42);
     }
 
