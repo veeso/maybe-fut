@@ -148,6 +148,15 @@ mod test {
         let mutex = Mutex::new(42);
         let guard = SyncRuntime::block_on(mutex.lock());
         assert_eq!(*guard.unwrap(), 42);
+
+        // write
+        let mut guard = SyncRuntime::block_on(mutex.lock()).unwrap();
+        *guard = 43;
+        assert_eq!(*guard, 43);
+        // read
+        drop(guard);
+        let guard = SyncRuntime::block_on(mutex.lock()).unwrap();
+        assert_eq!(*guard, 43);
     }
 
     #[cfg(tokio_sync)]
@@ -156,6 +165,15 @@ mod test {
         let mutex = Mutex::new(42);
         let guard = mutex.lock().await;
         assert_eq!(*guard.unwrap(), 42);
+
+        // write
+        let mut guard = mutex.lock().await.unwrap();
+        *guard = 43;
+        assert_eq!(*guard, 43);
+        // read
+        drop(guard);
+        let guard = mutex.lock().await.unwrap();
+        assert_eq!(*guard, 43);
     }
 
     #[test]
@@ -163,6 +181,15 @@ mod test {
         let mutex = Mutex::new(42);
         let guard = SyncRuntime::block_on(mutex.try_lock());
         assert_eq!(*guard.unwrap(), 42);
+
+        // write
+        let mut guard = SyncRuntime::block_on(mutex.try_lock()).unwrap();
+        *guard = 43;
+        assert_eq!(*guard, 43);
+        // read
+        drop(guard);
+        let guard = SyncRuntime::block_on(mutex.try_lock()).unwrap();
+        assert_eq!(*guard, 43);
     }
 
     #[cfg(tokio_sync)]
@@ -171,6 +198,15 @@ mod test {
         let mutex = Mutex::new(42);
         let guard = mutex.try_lock().await;
         assert_eq!(*guard.unwrap(), 42);
+
+        // write
+        let mut guard = mutex.try_lock().await.unwrap();
+        *guard = 43;
+        assert_eq!(*guard, 43);
+        // read
+        drop(guard);
+        let guard = mutex.try_lock().await.unwrap();
+        assert_eq!(*guard, 43);
     }
 
     #[test]
