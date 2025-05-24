@@ -58,6 +58,70 @@ macro_rules! maybe_fut_constructor_result {
         };
 }
 
+/// A macro to create a constructor function that can be used in both async and sync contexts.
+#[macro_export]
+macro_rules! maybe_fut_constructor {
+    ($(#[$meta:meta])*
+        $name:ident
+        (
+            $ ( $arg_name:ident : $arg_type:ty ),*
+            $(,)?
+        )
+        -> $ret:ty,
+        $std_module:path,
+        $tokio_module:path,
+        $feature:ident
+    ) => {
+            $(#[$meta])*
+            pub async fn $name( $( $arg_name : $arg_type ),* ) -> $ret {
+                #[cfg($feature)]
+                {
+                    if $crate::is_async_context() {
+                        $tokio_module( $( $arg_name ),* ).await.into()
+                    } else {
+                        $std_module( $( $arg_name ),* ).into()
+                    }
+                }
+                #[cfg(not($feature))]
+                {
+                    $std_module( $( $arg_name ),* ).into()
+                }
+            }
+        };
+}
+
+/// A macro to create a constructor function that can be used in both async and sync contexts.
+#[macro_export]
+macro_rules! maybe_fut_constructor_sync {
+    ($(#[$meta:meta])*
+        $name:ident
+        (
+            $ ( $arg_name:ident : $arg_type:ty ),*
+            $(,)?
+        )
+        -> $ret:ty,
+        $std_module:path,
+        $tokio_module:path,
+        $feature:ident
+    ) => {
+            $(#[$meta])*
+            pub fn $name( $( $arg_name : $arg_type ),* ) -> $ret {
+                #[cfg($feature)]
+                {
+                    if $crate::is_async_context() {
+                        $tokio_module( $( $arg_name ),* ).into()
+                    } else {
+                        $std_module( $( $arg_name ),* ).into()
+                    }
+                }
+                #[cfg(not($feature))]
+                {
+                    $std_module( $( $arg_name ),* ).into()
+                }
+            }
+        };
+}
+
 /// A macro to create a method that can be used in both async and sync contexts.
 #[macro_export]
 macro_rules! maybe_fut_method {

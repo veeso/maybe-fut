@@ -22,7 +22,7 @@ extern crate maybe_fut_unwrap_derive;
 mod api;
 mod context;
 mod macros;
-mod sync;
+mod rt;
 mod unwrap;
 
 // public api (api is exported at top-level)
@@ -31,5 +31,5 @@ pub use maybe_fut_derive::maybe_fut;
 
 pub use self::api::*;
 pub use self::context::is_async_context;
-pub use self::sync::SyncRuntime;
+pub use self::rt::{SyncRuntime, block_on};
 pub use self::unwrap::Unwrap;

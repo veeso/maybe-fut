@@ -51,6 +51,7 @@ full = ["tokio", "tokio-fs", "tokio-sync"]
 tokio = ["dep:tokio"]
 tokio-fs = ["tokio", "tokio/fs"]
 tokio-sync = ["tokio", "tokio/sync"]
+tokio-time = ["tokio", "tokio/time"]
 
 [package.metadata.docs.rs]
 all-features = true
