@@ -188,6 +188,11 @@ mod test {
         let mut write_guard = SyncRuntime::block_on(rwlock.write()).unwrap();
         *write_guard = 43;
         assert_eq!(*write_guard, 43);
+
+        // Test that the lock is still held after the write
+        drop(write_guard);
+        let read_guard = SyncRuntime::block_on(rwlock.read()).unwrap();
+        assert_eq!(*read_guard, 43);
     }
 
     #[cfg(tokio_sync)]
@@ -197,6 +202,11 @@ mod test {
         let mut write_guard = rwlock.write().await.unwrap();
         *write_guard = 43;
         assert_eq!(*write_guard, 43);
+
+        // Test that the lock is still held after the write
+        drop(write_guard);
+        let read_guard = rwlock.read().await.unwrap();
+        assert_eq!(*read_guard, 43);
     }
 
     #[test]
@@ -205,6 +215,11 @@ mod test {
         let mut write_guard = SyncRuntime::block_on(rwlock.try_write()).unwrap();
         *write_guard = 43;
         assert_eq!(*write_guard, 43);
+
+        // Test that the lock is still held after the write
+        drop(write_guard);
+        let read_guard = SyncRuntime::block_on(rwlock.read()).unwrap();
+        assert_eq!(*read_guard, 43);
     }
 
     #[cfg(tokio_sync)]
@@ -214,5 +229,10 @@ mod test {
         let mut write_guard = rwlock.try_write().await.unwrap();
         *write_guard = 43;
         assert_eq!(*write_guard, 43);
+
+        // Test that the lock is still held after the write
+        drop(write_guard);
+        let read_guard = rwlock.read().await.unwrap();
+        assert_eq!(*read_guard, 43);
     }
 }
