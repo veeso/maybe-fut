@@ -47,7 +47,7 @@ cfg_aliases = { workspace = true }
 
 [features]
 default = []
-full = ["tokio", "tokio-fs", "tokio-sync"]
+full = ["tokio", "tokio-fs", "tokio-sync", "tokio-time"]
 tokio = ["dep:tokio"]
 tokio-fs = ["tokio", "tokio/fs"]
 tokio-sync = ["tokio", "tokio/sync"]
