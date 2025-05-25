@@ -41,35 +41,52 @@ impl Add<Duration> for Instant {
 
     fn add(self, other: Duration) -> Self::Output {
         // convert the inner types to std
-        let is_async = matches!(self.0, InstantInner::Tokio(_));
-        let a = match self.0 {
-            InstantInner::Std(a) => a,
-            #[cfg(tokio_time)]
-            InstantInner::Tokio(a) => a.into_std(),
-        };
-        // perform the addition
-        if is_async {
-            Instant(InstantInner::Tokio((a + other).into()))
-        } else {
-            Instant(InstantInner::Std(a + other))
+        #[cfg(tokio_time)]
+        {
+            let is_async = matches!(self.0, InstantInner::Tokio(_));
+            let a = match self.0 {
+                InstantInner::Std(a) => a,
+                #[cfg(tokio_time)]
+                InstantInner::Tokio(a) => a.into_std(),
+            };
+            // perform the addition
+            if is_async {
+                Instant(InstantInner::Tokio((a + other).into()))
+            } else {
+                Instant(InstantInner::Std(a + other))
+            }
+        }
+        #[cfg(not(tokio_time))]
+        {
+            use crate::unwrap::Unwrap as _;
+            Instant(InstantInner::Std(self.unwrap_std() + other))
         }
     }
 }
 
 impl AddAssign<Duration> for Instant {
     fn add_assign(&mut self, other: Duration) {
-        // convert the inner types to std
-        let is_async = matches!(self.0, InstantInner::Tokio(_));
-        let a = match self.0 {
-            InstantInner::Std(a) => a,
-            #[cfg(tokio_time)]
-            InstantInner::Tokio(a) => a.into_std(),
-        };
-        // perform the addition
-        if is_async {
-            self.0 = InstantInner::Tokio((a + other).into());
-        } else {
-            self.0 = InstantInner::Std(a + other);
+        #[cfg(tokio_time)]
+        {
+            // convert the inner types to std
+            let is_async = matches!(self.0, InstantInner::Tokio(_));
+            let a = match self.0 {
+                InstantInner::Std(a) => a,
+                #[cfg(tokio_time)]
+                InstantInner::Tokio(a) => a.into_std(),
+            };
+            // perform the addition
+            if is_async {
+                self.0 = InstantInner::Tokio((a + other).into());
+            } else {
+                self.0 = InstantInner::Std(a + other);
+            }
+        }
+        #[cfg(not(tokio_time))]
+        {
+            // perform the addition
+            use crate::unwrap::Unwrap as _;
+            *self = (self.unwrap_std() + other).into();
         }
     }
 }
@@ -96,20 +113,29 @@ impl Sub for Instant {
 
 impl SubAssign<Duration> for Instant {
     fn sub_assign(&mut self, other: Duration) {
-        let is_async = matches!(self.0, InstantInner::Tokio(_));
+        #[cfg(tokio_time)]
+        {
+            let is_async = matches!(self.0, InstantInner::Tokio(_));
 
-        // convert the inner types to std
-        let a = match self.0 {
-            InstantInner::Std(a) => a,
-            #[cfg(tokio_time)]
-            InstantInner::Tokio(a) => a.into_std(),
-        };
+            // convert the inner types to std
+            let a = match self.0 {
+                InstantInner::Std(a) => a,
+                #[cfg(tokio_time)]
+                InstantInner::Tokio(a) => a.into_std(),
+            };
 
-        // perform the subtraction
-        if is_async {
-            self.0 = InstantInner::Tokio((a - other).into());
-        } else {
-            self.0 = InstantInner::Std(a - other);
+            // perform the subtraction
+            if is_async {
+                self.0 = InstantInner::Tokio((a - other).into());
+            } else {
+                self.0 = InstantInner::Std(a - other);
+            }
+        }
+        #[cfg(not(tokio_time))]
+        {
+            use crate::unwrap::Unwrap as _;
+            // perform the subtraction
+            *self = (self.unwrap_std() - other).into();
         }
     }
 }
@@ -143,22 +169,34 @@ impl Instant {
 
     /// Returns `Some(T)` where `t is the time `self - duration` if `t` can be represented as [`Instant`], otherwise `None`.
     pub fn checked_sub(&self, duration: Duration) -> Option<Self> {
-        let is_async = matches!(self.0, InstantInner::Tokio(_));
+        #[cfg(tokio_time)]
+        {
+            let is_async = matches!(self.0, InstantInner::Tokio(_));
 
-        // convert the inner types to std
-        let a = match self.0 {
-            InstantInner::Std(a) => a,
-            #[cfg(tokio_time)]
-            InstantInner::Tokio(a) => a.into_std(),
-        };
+            // convert the inner types to std
+            let a = match self.0 {
+                InstantInner::Std(a) => a,
+                #[cfg(tokio_time)]
+                InstantInner::Tokio(a) => a.into_std(),
+            };
 
-        // perform the checked subtraction
-        if is_async {
-            Some(InstantInner::Tokio(a.checked_sub(duration)?.into()))
-        } else {
-            Some(InstantInner::Std(a.checked_sub(duration)?))
+            // perform the checked subtraction
+            if is_async {
+                Some(InstantInner::Tokio(a.checked_sub(duration)?.into()))
+            } else {
+                Some(InstantInner::Std(a.checked_sub(duration)?))
+            }
+            .map(Instant)
         }
-        .map(Instant)
+        #[cfg(not(tokio_time))]
+        {
+            // convert the inner types to std
+            use crate::unwrap::Unwrap as _;
+            let a = self.unwrap_std();
+
+            // perform the checked subtraction
+            Some(InstantInner::Std(a.checked_sub(duration)?)).map(Instant)
+        }
     }
 
     pub fn duration_since(&self, earlier: Instant) -> Duration {
