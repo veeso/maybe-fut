@@ -13,9 +13,16 @@ use crate::maybe_fut_constructor_sync;
 ///
 /// The data can only be accessed through the RAII guards returned from [`Mutex::lock`] and [`Mutex::try_lock`],
 /// which guarantees that the data is only ever accessed when the mutex is locked.
+#[derive(Debug, Unwrap)]
+#[unwrap_types(
+    std(std::sync::Mutex),
+    tokio(tokio::sync::Mutex),
+    tokio_gated("tokio-sync")
+)]
 pub struct Mutex<T>(MutexInner<T>);
 
 /// Inner wrapper for [`Mutex`].
+#[derive(Debug)]
 enum MutexInner<T> {
     /// Std mutex
     Std(std::sync::Mutex<T>),
@@ -124,11 +131,48 @@ impl<T> From<T> for Mutex<T> {
     }
 }
 
+impl<T> Default for Mutex<T>
+where
+    T: Default,
+{
+    fn default() -> Self {
+        Mutex::new(T::default())
+    }
+}
+
 #[cfg(test)]
 mod test {
 
     use super::*;
     use crate::SyncRuntime;
+
+    #[test]
+    fn test_mutex_default_sync() {
+        let mutex: Mutex<i32> = Mutex::default();
+        assert!(matches!(mutex.0, MutexInner::Std(_)));
+    }
+
+    #[cfg(tokio_sync)]
+    #[tokio::test]
+    async fn test_mutex_default_tokio_sync() {
+        let mutex: Mutex<i32> = Mutex::default();
+        assert!(matches!(mutex.0, MutexInner::Tokio(_)));
+    }
+
+    #[test]
+    fn test_mutex_from_sync() {
+        let std_mutex = std::sync::Mutex::new(42);
+        let mutex: Mutex<i32> = Mutex::from(std_mutex);
+        assert!(matches!(mutex.0, MutexInner::Std(_)));
+    }
+
+    #[cfg(tokio_sync)]
+    #[tokio::test]
+    async fn test_mutex_from_tokio() {
+        let tokio_mutex = tokio::sync::Mutex::new(42);
+        let mutex: Mutex<i32> = Mutex::from(tokio_mutex);
+        assert!(matches!(mutex.0, MutexInner::Tokio(_)));
+    }
 
     #[test]
     fn test_mutex_new_sync() {

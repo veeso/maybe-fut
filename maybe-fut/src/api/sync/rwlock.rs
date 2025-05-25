@@ -10,8 +10,17 @@ use crate::maybe_fut_constructor_sync;
 /// This type of lock allows a number of readers or at most one writer at any point in time.
 /// The write portion of this lock typically allows modification of the underlying data (exclusive access)
 /// and the read portion of this lock typically allows for read-only access (shared access).
-pub struct RwLock<T: Sized>(RwLockInner<T>);
+#[derive(Debug, Unwrap)]
+#[unwrap_types(
+    std(std::sync::RwLock),
+    tokio(tokio::sync::RwLock),
+    tokio_gated("tokio-sync")
+)]
+pub struct RwLock<T>(RwLockInner<T>)
+where
+    T: Sized;
 
+#[derive(Debug)]
 enum RwLockInner<T: Sized> {
     Std(std::sync::RwLock<T>),
     #[cfg(tokio_sync)]
@@ -125,11 +134,54 @@ where
     }
 }
 
+impl<T> From<T> for RwLock<T> {
+    fn from(t: T) -> Self {
+        RwLock::new(t)
+    }
+}
+
+impl<T> Default for RwLock<T>
+where
+    T: Default,
+{
+    fn default() -> Self {
+        RwLock::new(T::default())
+    }
+}
+
 #[cfg(test)]
 mod test {
 
     use super::*;
     use crate::SyncRuntime;
+
+    #[test]
+    fn test_rwlock_default_sync() {
+        let rwlock: RwLock<i32> = RwLock::default();
+        assert!(matches!(rwlock.0, RwLockInner::Std(_)));
+    }
+
+    #[cfg(tokio_sync)]
+    #[tokio::test]
+    async fn test_rwlock_default_tokio() {
+        let rwlock: RwLock<i32> = RwLock::default();
+        assert!(matches!(rwlock.0, RwLockInner::Tokio(_)));
+    }
+
+    #[test]
+    fn test_rwlock_from_sync() {
+        let std_rwlock = std::sync::RwLock::new(42);
+        let rwlock: RwLock<i32> = RwLock::from(std_rwlock);
+        assert!(matches!(rwlock.0, RwLockInner::Std(_)));
+    }
+
+    #[cfg(tokio_sync)]
+    #[tokio::test]
+    async fn test_rwlock_from_tokio() {
+        let tokio_rwlock = tokio::sync::RwLock::new(42);
+        let rwlock: RwLock<i32> = RwLock::from(tokio_rwlock);
+        assert!(matches!(rwlock.0, RwLockInner::Tokio(_)));
+    }
 
     #[test]
     fn test_rwlock_new_sync() {

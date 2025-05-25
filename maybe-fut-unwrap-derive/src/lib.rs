@@ -34,6 +34,7 @@ use syn::{Data, DeriveInput, Fields, parenthesized, parse_macro_input};
 pub fn unwrap(item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as DeriveInput);
     let struct_name = &input.ident;
+    let generics = &input.generics;
     // struct must be a tuple struct
     let fields = match input.data {
         Data::Struct(ref data) => match data.fields {
@@ -109,12 +110,12 @@ pub fn unwrap(item: TokenStream) -> TokenStream {
         const _: () = {
             use crate::Unwrap;
 
-            impl Unwrap for #struct_name {
-                type StdImpl = #std_inner_type;
+            impl #generics Unwrap for #struct_name #generics {
+                type StdImpl = #std_inner_type #generics;
                 #[cfg(feature = #tokio_gated)]
-                type TokioImpl = #tokio_inner_type;
+                type TokioImpl = #tokio_inner_type #generics;
                 #[cfg(all(not(feature = #tokio_gated), feature = "tokio"))]
-                type TokioImpl = #std_inner_type;
+                type TokioImpl = #std_inner_type #generics;
 
 
                 fn unwrap_std(self) -> Self::StdImpl {
@@ -209,7 +210,7 @@ pub fn unwrap(item: TokenStream) -> TokenStream {
                     }
                 }
 
-                fn get_std_ref(&self) -> Option<&Self::StdImpl> {
+                fn get_std_ref(&self) -> Option<&Self::StdImpl > {
                     match self {
                         #struct_name(#field_type_ident::Std(inner)) => Some(inner),
                         _ => None,
@@ -232,7 +233,7 @@ pub fn unwrap(item: TokenStream) -> TokenStream {
                     }
                 }
 
-                fn get_std_mut(&mut self) -> Option<&mut Self::StdImpl> {
+                fn get_std_mut(&mut self) -> Option<&mut Self::StdImpl > {
                     match self {
                         #struct_name(#field_type_ident::Std(inner)) => Some(inner),
                         _ => None,

@@ -1,7 +1,12 @@
 use crate::maybe_fut_constructor_sync;
 
 /// A barrier enables multiple threads to synchronize the beginning of some computation.
-#[derive(Debug)]
+#[derive(Debug, Unwrap)]
+#[unwrap_types(
+    std(std::sync::Barrier),
+    tokio(tokio::sync::Barrier),
+    tokio_gated("tokio-sync")
+)]
 pub struct Barrier(BarrierInner);
 
 /// Inner wrapper for [`Barrier`].
