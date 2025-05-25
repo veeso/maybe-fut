@@ -146,6 +146,30 @@ macro_rules! maybe_fut_method {
         };
 }
 
+/// A macro to create a method that can be used in both async and sync contexts.
+#[macro_export]
+macro_rules! maybe_fut_method_sync {
+    ($(#[$meta:meta])*
+        $name:ident
+        (
+            $( $arg_name:ident : $arg_type:ty ),* $(,)?
+        )
+        -> $ret:ty,
+        $sync_inner_type:path,
+        $async_inner_type:path,
+        $feature:ident
+    ) => {
+            $(#[$meta])*
+            pub fn $name( &self, $( $arg_name : $arg_type ),* ) -> $ret {
+                match &self.0 {
+                    $sync_inner_type(inner) => inner.$name( $( $arg_name ),* ),
+                    #[cfg($feature)]
+                    $async_inner_type(inner) => inner.$name( $( $arg_name ),* ),
+                }
+            }
+        };
+}
+
 /// A macro to create a mutable method that can be used in both async and sync contexts.
 #[macro_export]
 macro_rules! maybe_fut_method_mut {
