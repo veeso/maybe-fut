@@ -6,6 +6,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         // features
         tokio: { feature = "tokio" },
         tokio_fs: { feature = "tokio-fs" },
+        tokio_net: { feature = "tokio-net" },
         tokio_sync: { feature = "tokio-sync" },
         tokio_time: { feature = "tokio-time" }
     }
