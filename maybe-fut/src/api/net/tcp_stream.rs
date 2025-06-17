@@ -63,18 +63,7 @@ impl std::os::fd::AsRawFd for TcpStream {
 
 #[cfg(windows)]
 impl std::os::windows::io::AsSocket for TcpStream {
-    fn as_fd(&self) -> std::os::windows::io::BorrowedSocket<'_> {
-        match &self.0 {
-            TcpStreamInner::Std(file) => file.as_socket(),
-            #[cfg(tokio_fs)]
-            TcpStreamInner::Tokio(file) => file.as_socket(),
-        }
-    }
-}
-
-#[cfg(windows)]
-impl std::os::windows::io::AsSocket for TcpStream {
-    fn as_fd(&self) -> std::os::windows::io::BorrowedSocket<'_> {
+    fn as_socket(&self) -> std::os::windows::io::BorrowedSocket<'_> {
         match &self.0 {
             TcpStreamInner::Std(file) => file.as_socket(),
             #[cfg(tokio_fs)]
@@ -85,7 +74,7 @@ impl std::os::windows::io::AsSocket for TcpStream {
 
 #[cfg(windows)]
 impl std::os::windows::io::AsRawSocket for TcpStream {
-    fn as_fd(&self) -> std::os::windows::io::RawSocket {
+    fn as_raw_socket(&self) -> std::os::windows::io::RawSocket {
         match &self.0 {
             TcpStreamInner::Std(file) => file.as_raw_socket(),
             #[cfg(tokio_fs)]
