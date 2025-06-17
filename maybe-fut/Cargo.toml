@@ -39,6 +39,8 @@ tokio = { workspace = true, default-features = false, features = [
 [dev-dependencies]
 criterion = { workspace = true }
 pretty_assertions = { workspace = true }
+rand = { workspace = true }
+serial_test = { workspace = true }
 tempfile = { workspace = true }
 tokio = { workspace = true, default-features = true, features = ["full"] }
 
@@ -47,9 +49,10 @@ cfg_aliases = { workspace = true }
 
 [features]
 default = []
-full = ["tokio", "tokio-fs", "tokio-sync", "tokio-time"]
+full = ["tokio", "tokio-fs", "tokio-net", "tokio-sync", "tokio-time"]
 tokio = ["dep:tokio"]
 tokio-fs = ["tokio", "tokio/fs"]
+tokio-net = ["tokio", "tokio/net"]
 tokio-sync = ["tokio", "tokio/sync"]
 tokio-time = ["tokio", "tokio/time"]
 

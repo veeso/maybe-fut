@@ -9,8 +9,8 @@ build:
 
 # Run the tests
 [group('build')]
-test:
-  cargo test-all
+test test_name="":
+  cargo test-all {{test_name}}
 
 # Run clippy
 [group('build')]
