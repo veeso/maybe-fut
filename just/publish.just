@@ -12,7 +12,7 @@ publish crate:
   echo "Publishing {{crate}}"
   if just crate_outdated {{crate}}; then
     set -ex
-    cargo publish --dry-run --allow-dirty --package {{crate}}
+    cargo publish --package {{crate}}
   else
     echo "Crate {{crate}} is already up to date. Skipping publish."
   fi
