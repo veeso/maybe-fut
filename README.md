@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">Developed by <a href="https://veeso.me/">veeso</a>
-<p align="center">Current version: 0.1.0 WIP (08/03/2025)</p>
+<p align="center">Current version: 0.1.0 (2025/06/18)</p>
 
 <p align="center">
   <a href="https://opensource.org/licenses/MIT"
@@ -67,6 +67,7 @@
 
 - [maybe-fut](#maybe-fut)
   - [Introduction](#introduction)
+  - [Performance](#performance)
   - [Limitations](#limitations)
   - [Support the developer](#support-the-developer)
   - [Changelog](#changelog)
@@ -79,6 +80,8 @@
 **Maybe-fut** is a Rust library that provides a way to export both a **sync** and an **async** API from the same codebase. It allows you to write your code once and have it work in both synchronous and asynchronous contexts.
 
 This is achieved through a complex mechanism of **proc macros** and wrappers around `tokio` and `std` libraries.
+
+Maybe-fut provides its own type library, for `fs`, `io`, `net`, `sync` and `time` modules, which are designed to use `std` or `tokio` types as needed. Mind that for compatibility reasons, the `io` module has been re-implemented from scratch.
 
 At runtime it checks whether the thread is running in a **sync** or **async** context and calls the appropriate function. This allows you to write your code once and have it work in both synchronous and asynchronous contexts.
 
@@ -219,6 +222,31 @@ where
 }
 ```
 
+## Performance
+
+As of now, the performance of `maybe-fut` is on par with the `tokio` and `std` libraries. The proc macro generates code that is optimized for both synchronous and asynchronous contexts, so there is no significant overhead when using it.
+
+This overhead is negligible, and it has been benchmarked, as shown at `maybe-fut/benches/async_context.rs`, and the results are actually quite good.
+
+```txt
+is_async_context        time:   [3.3511 ns 3.3567 ns 3.3621 ns]
+Found 4 outliers among 100 measurements (4.00%)
+  3 (3.00%) high mild
+  1 (1.00%) high severe
+```
+
+What's the cost of a wrapper? Let's try to measure it by creating a file with `tokio::fs::File::create` and `maybe_fut::fs::File::create`:
+
+```txt
+tokio_create_file       time:   [11.529 µs 11.620 µs 11.715 µs]
+Found 4 outliers among 100 measurements (4.00%)
+  4 (4.00%) high mild
+
+maybe_fut_create_file   time:   [11.603 µs 11.696 µs 11.786 µs]
+```
+
+So yeah, the cost of the wrapper is a very little higher, but **the difference is negligible**.
+
 ## Limitations
 
 Currently, there are some limitations with the proc macro, so the following features are still not supported:
@@ -239,7 +267,7 @@ If you like **maybe-fut**, please consider a little donation 🥳
 
 ## Changelog
 
-View Changelog [here](CHANGELOG.md)
+[View Changelog here](CHANGELOG.md)
 
 ---
 

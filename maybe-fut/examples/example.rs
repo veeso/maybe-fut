@@ -37,6 +37,23 @@ fn sync_main(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
 
     let client = SyncFsClient::new(path);
     client.create()?;
+    println!("File created at: {}", path.display());
+
+    // write
+    let data = b"Hello, world!";
+    client.write(data)?;
+    println!("Data written to file: {}", String::from_utf8_lossy(data));
+
+    // read
+    let read_data = client.read()?;
+    println!(
+        "Data read from file: {}",
+        String::from_utf8_lossy(&read_data)
+    );
+    assert_eq!(
+        read_data, data,
+        "Data read from file does not match written data"
+    );
 
     Ok(())
 }
@@ -46,6 +63,23 @@ async fn tokio_main(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
 
     let client = TokioFsClient::new(path);
     client.create().await?;
+    println!("File created at: {}", path.display());
+
+    // write
+    let data = b"Hello, world!";
+    client.write(data).await?;
+    println!("Data written to file: {}", String::from_utf8_lossy(data));
+
+    // read
+    let read_data = client.read().await?;
+    println!(
+        "Data read from file: {}",
+        String::from_utf8_lossy(&read_data)
+    );
+    assert_eq!(
+        read_data, data,
+        "Data read from file does not match written data"
+    );
 
     Ok(())
 }

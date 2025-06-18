@@ -1,6 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use maybe_fut::fs::File;
+use maybe_fut::io::{Read, Write};
 
 struct FsClient {
     path: PathBuf,
@@ -26,5 +27,24 @@ impl FsClient {
         file.sync_all().await?;
 
         Ok(())
+    }
+
+    /// Write data to the file at the specified path.
+    pub async fn write(&self, data: &[u8]) -> std::io::Result<()> {
+        // Open the file in write mode and write the data to it.
+        let mut file = File::create(&self.path).await?;
+        file.write_all(data).await?;
+        file.sync_all().await?;
+
+        Ok(())
+    }
+
+    pub async fn read(&self) -> std::io::Result<Vec<u8>> {
+        // Open the file in read mode and read the data from it.
+        let mut file = File::open(&self.path).await?;
+        let mut buffer = Vec::new();
+        file.read_to_end(&mut buffer).await?;
+
+        Ok(buffer)
     }
 }

@@ -66,6 +66,7 @@ where
     ///
     /// If the inner type is a [`tokio::sync::Mutex`], this function is a no-op.
     pub fn clear_poison(&self) {
+        #[allow(irrefutable_let_patterns)]
         if let MutexInner::Std(mutex) = &self.0 {
             mutex.clear_poison();
         }

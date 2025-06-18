@@ -95,7 +95,7 @@ impl std::os::fd::AsFd for TcpListener {
     fn as_fd(&self) -> std::os::fd::BorrowedFd<'_> {
         match &self.0 {
             TcpListenerInner::Std(file) => file.as_fd(),
-            #[cfg(tokio_fs)]
+            #[cfg(tokio_net)]
             TcpListenerInner::Tokio(file) => file.as_fd(),
         }
     }
@@ -106,7 +106,7 @@ impl std::os::fd::AsRawFd for TcpListener {
     fn as_raw_fd(&self) -> std::os::fd::RawFd {
         match &self.0 {
             TcpListenerInner::Std(file) => file.as_raw_fd(),
-            #[cfg(tokio_fs)]
+            #[cfg(tokio_net)]
             TcpListenerInner::Tokio(file) => file.as_raw_fd(),
         }
     }
@@ -117,7 +117,7 @@ impl std::os::windows::io::AsSocket for TcpListener {
     fn as_socket(&self) -> std::os::windows::io::BorrowedSocket<'_> {
         match &self.0 {
             TcpListenerInner::Std(file) => file.as_socket(),
-            #[cfg(tokio_fs)]
+            #[cfg(tokio_net)]
             TcpListenerInner::Tokio(file) => file.as_socket(),
         }
     }
@@ -128,7 +128,7 @@ impl std::os::windows::io::AsRawSocket for TcpListener {
     fn as_raw_socket(&self) -> std::os::windows::io::RawSocket {
         match &self.0 {
             TcpListenerInner::Std(file) => file.as_raw_socket(),
-            #[cfg(tokio_fs)]
+            #[cfg(tokio_net)]
             TcpListenerInner::Tokio(file) => file.as_raw_socket(),
         }
     }

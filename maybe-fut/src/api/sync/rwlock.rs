@@ -65,6 +65,7 @@ where
     ///
     /// If the inner lock is a Tokio lock, this function will do nothing.
     pub fn clear_poison(&self) {
+        #[allow(irrefutable_let_patterns)]
         if let RwLockInner::Std(lock) = &self.0 {
             lock.clear_poison();
         }
